@@ -1,0 +1,30 @@
+{
+  "name": "Tezos dev portal dapp tutorial",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^1.0.8",
+    "@tsconfig/svelte": "^3.0.0",
+    "sass": "^1.55.0",
+    "svelte": "^3.50.1",
+    "svelte-check": "^2.9.1",
+    "svelte-preprocess": "^4.10.7",
+    "tslib": "^2.4.0",
+    "typescript": "^4.8.4",
+    "vite": "^3.1.4"
+  },
+  "dependencies": {
+    "@airgap/beacon-sdk": "^3.2.0",
+    "@taquito/beacon-wallet": "^14.0.0-a84e2bd0--1972",
+    "@taquito/taquito": "^14.0.0",
+    "buffer": "^6.0.3",
+    "events": "^3.3.0",
+    "vite-compatible-readable-stream": "^3.6.1"
+  }
+}
