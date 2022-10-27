@@ -1,0 +1,1 @@
+export type token = "XTZ" | "tzBTC" | "SIRS";
