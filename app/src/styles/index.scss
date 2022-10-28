@@ -94,6 +94,14 @@ button {
         margin: 0px;
         color: inherit;
     }
+
+    &:disabled {
+        cursor: not-allowed;
+
+        &:hover {
+            transform: translateY(0px);
+        }
+    }
 }
 
 h1 {
@@ -129,6 +137,7 @@ h1 {
         justify-content: center;
         align-items: center;
         gap: 10px;
+        padding: 5px 0px;
     }
 
     .input-with-logo__max {
@@ -136,11 +145,11 @@ h1 {
         color: inherit
     }
     &.left-logo .input-with-logo__max {
-        text-align: left;
+        float: left;
         padding-left: 10px;
     }
     &.right-logo .input-with-logo__max {
-        text-align: right;
+        float: right;
         padding-right: 10px;
     }
 }

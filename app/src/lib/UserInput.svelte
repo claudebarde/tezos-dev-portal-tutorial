@@ -1,21 +1,23 @@
 <script lang="ts">
   import { afterUpdate, createEventDispatcher } from "svelte";
   import type { token } from "../types";
+  import store from "../store";
 
   let currentToken: token;
-  let inputVal = "";
   const dispatch = createEventDispatcher();
 
-  export let logoPos: "left" | "right", token: token, disabled: boolean;
+  export let inputVal: string,
+    logoPos: "left" | "right",
+    token: token,
+    disabled: boolean;
 
   const inputAmount = ev => {
-    const val = ev.target.value;
+    const val = +ev.target.value;
     // validates numeric input
-    if (!isNaN(+val)) {
-      inputVal = val;
+    if (!isNaN(val)) {
       dispatch("new-input", { token, val });
     } else {
-      inputVal = "";
+      dispatch("new-input", { token, val: "" });
     }
   };
 
@@ -42,6 +44,12 @@
         <img src={`images/${token}.png`} alt={token} />
       {/if}
     </div>
-    <button class="input-with-logo__max transparent">Max: 69</button>
+    <button class="input-with-logo__max transparent">
+      {#if $store.userAddress}
+        Max: {$store.userBalances[currentToken] || 0}
+      {:else}
+        No balance
+      {/if}
+    </button>
   </div>
 {/if}

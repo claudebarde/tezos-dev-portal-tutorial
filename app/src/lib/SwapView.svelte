@@ -18,7 +18,15 @@
   };
 
   const saveInput = ev => {
-    console.log({ tokenFrom, ...ev.detail });
+    const { token, val } = ev.detail;
+    if (token === tokenFrom && val > 0) {
+      inputFrom = val.toString();
+      inputTo = "6969";
+      // TODO: calculate the corresponding amount for tokenTo
+    } else {
+      inputFrom = "";
+      inputTo = "";
+    }
   };
 </script>
 
@@ -62,6 +70,7 @@
   <div class="swap-inputs">
     <UserInput
       token={tokenFrom}
+      inputVal={inputFrom}
       logoPos="left"
       on:new-input={saveInput}
       disabled={false}
@@ -71,10 +80,11 @@
     </button>
     <UserInput
       token={tokenTo}
+      inputVal={inputTo}
       logoPos="right"
       on:new-input={saveInput}
       disabled={true}
     />
   </div>
-  <button class="primary">Swap</button>
+  <button class="primary" disabled={!inputFrom || !inputTo}>Swap</button>
 </div>

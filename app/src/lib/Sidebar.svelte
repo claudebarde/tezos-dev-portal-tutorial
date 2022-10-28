@@ -9,13 +9,13 @@
     height: 100%;
     border-right: solid 3px $powder-blue;
     display: grid;
-    grid-template-rows: 10% 80% 10%;
+    grid-template-rows: 20% 70% 10%;
     gap: 20px;
 
     .sidebar__wallet {
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
     }
 
     .sidebar__dex {
