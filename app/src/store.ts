@@ -1,7 +1,8 @@
 import { writable } from "svelte/store";
 import type { TezosToolkit } from "@taquito/taquito";
 import type { BeaconWallet } from "@taquito/beacon-wallet";
-import type { token } from "./types";
+import type { token, Storage } from "./types";
+import type BigNumber from "bignumber.js";
 
 export type TezosContractAddress = `KT1${string}`;
 export type TezosAccountAddress = `tz${"1" | "2" | "3"}${string}`;
@@ -11,7 +12,8 @@ interface State {
     wallet: BeaconWallet;
     userAddress: TezosAccountAddress;
     currentView: "swap" | "add-liquidity" | "remove-liquidity";
-    userBalances: { XTZ: null | number; tzBTC: null | number;  SIRS: null | number}
+    userBalances: { XTZ: null | number; tzBTC: null | number; SIRS: null | number };
+    dexInfo: Storage | undefined
 };
 
 const initialState: State = {
@@ -19,7 +21,8 @@ const initialState: State = {
     wallet: undefined,
     userAddress: undefined,
     currentView: "swap",
-    userBalances: { XTZ: null, tzBTC: null, SIRS: null}
+    userBalances: { XTZ: null, tzBTC: null, SIRS: null },
+    dexInfo: undefined
 };
 
 const store = writable(initialState);
@@ -45,7 +48,9 @@ const state = {
             } else {
                 return store
             }
-        })
+        }),
+    updateDexInfo: (info: Storage) =>
+        store.update(store => ({ ...store, dexInfo: info })),
 };
 
 export default state;

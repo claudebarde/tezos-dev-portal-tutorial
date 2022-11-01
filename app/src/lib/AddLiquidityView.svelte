@@ -60,7 +60,7 @@
   }
 </style>
 
-<div class="add-liquidity-container">
+<div class="container add-liquidity-container">
   <h1>Add liquidity</h1>
   <div class="add-liquidity-inputs">
     <UserInput

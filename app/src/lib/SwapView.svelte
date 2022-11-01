@@ -34,15 +34,6 @@
   @import "../styles/settings.scss";
 
   .swap-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    border: solid 5px $powder-blue;
-    border-radius: $std-border-radius;
-    padding: calc(#{$padding} * 3);
-
     .swap-inputs {
       display: flex;
       justify-content: center;
@@ -65,7 +56,7 @@
   }
 </style>
 
-<div class="swap-container">
+<div class="container swap-container">
   <h1>Swap</h1>
   <div class="swap-inputs">
     <UserInput

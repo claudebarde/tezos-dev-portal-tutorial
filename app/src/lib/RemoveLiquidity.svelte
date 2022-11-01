@@ -60,7 +60,7 @@
   }
 </style>
 
-<div class="remove-liquidity-container">
+<div class="container remove-liquidity-container">
   <h1>Remove liquidity</h1>
   <div class="remove-liquidity-inputs">
     <UserInput

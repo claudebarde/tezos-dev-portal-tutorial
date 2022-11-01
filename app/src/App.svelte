@@ -7,6 +7,7 @@
   import { rpcUrl, dexAddress } from "./config";
   import Sidebar from "./lib/Sidebar.svelte";
   import Interface from "./lib/Interface.svelte";
+  import type { Storage } from "./types";
 
   const connectWallet = async () => {
     await $store.wallet.requestPermissions({
@@ -25,7 +26,11 @@
   onMount(async () => {
     const Tezos = new TezosToolkit(rpcUrl);
     const contract = await Tezos.wallet.at(dexAddress);
-    const storage: any = await contract.storage();
+    const storage: Storage | undefined = await contract.storage();
+
+    if (storage) {
+      store.updateDexInfo({ ...storage });
+    }
 
     const wallet = new BeaconWallet({
       name: "Tezos dev portal dapp tutorial",
@@ -48,7 +53,7 @@
     grid-template-columns: 250px 1fr;
     gap: $padding;
     padding: $padding;
-    height: calc(100% - (#{$padding} * 2));
+    height: calc(100% - (#{$padding} * 3));
   }
 </style>
 

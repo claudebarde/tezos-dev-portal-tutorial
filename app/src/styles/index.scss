@@ -153,3 +153,16 @@ h1 {
         padding-right: 10px;
     }
 }
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    border: solid 5px $powder-blue;
+    border-radius: $std-border-radius;
+    padding: calc(#{$padding} * 3);
+    margin: 20px;
+    background-color: $powder-blue;
+}
