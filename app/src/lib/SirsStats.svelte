@@ -12,7 +12,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: solid 5px $powder-blue;
+    border: solid 3px darken($powder-blue, 10);
     border-radius: $std-border-radius;
     margin: 20px;
     background-color: $powder-blue;

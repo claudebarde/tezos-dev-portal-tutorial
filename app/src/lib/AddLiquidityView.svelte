@@ -35,7 +35,7 @@
     justify-content: center;
     align-items: center;
     gap: 20px;
-    border: solid 5px $powder-blue;
+    border: solid 3px darken($powder-blue, 10);
     border-radius: $std-border-radius;
     padding: calc(#{$padding} * 3);
 
