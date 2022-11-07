@@ -8,8 +8,8 @@
 
   .stats-container {
     padding: $padding;
-    width: 60%;
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
     border: solid 3px darken($powder-blue, 10);

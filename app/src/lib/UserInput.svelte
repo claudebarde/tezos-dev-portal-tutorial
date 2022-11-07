@@ -2,6 +2,7 @@
   import { afterUpdate, createEventDispatcher } from "svelte";
   import type { token } from "../types";
   import store from "../store";
+  import { displayTokenAmount } from "../utils";
 
   let currentToken: token;
   const dispatch = createEventDispatcher();
@@ -46,7 +47,9 @@
     </div>
     <button class="input-with-logo__max transparent">
       {#if $store.userAddress}
-        Max: {$store.userBalances[currentToken] || 0}
+        Max: {$store.userBalances[currentToken]
+          ? displayTokenAmount($store.userBalances[currentToken], currentToken)
+          : 0}
       {:else}
         No balance
       {/if}

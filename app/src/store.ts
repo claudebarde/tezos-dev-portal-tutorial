@@ -2,7 +2,6 @@ import { writable } from "svelte/store";
 import type { TezosToolkit } from "@taquito/taquito";
 import type { BeaconWallet } from "@taquito/beacon-wallet";
 import type { token, Storage } from "./types";
-import type BigNumber from "bignumber.js";
 
 export type TezosContractAddress = `KT1${string}`;
 export type TezosAccountAddress = `tz${"1" | "2" | "3"}${string}`;
