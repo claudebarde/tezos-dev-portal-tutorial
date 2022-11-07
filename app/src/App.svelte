@@ -1,46 +1,20 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { TezosToolkit } from "@taquito/taquito";
-  import { BeaconWallet } from "@taquito/beacon-wallet";
-  import { NetworkType } from "@airgap/beacon-sdk";
-  import store, { type TezosAccountAddress } from "./store";
+  import store from "./store";
   import { rpcUrl, dexAddress } from "./config";
   import Sidebar from "./lib/Sidebar.svelte";
   import Interface from "./lib/Interface.svelte";
   import type { Storage } from "./types";
 
-  const connectWallet = async () => {
-    await $store.wallet.requestPermissions({
-      network: { type: NetworkType.GHOSTNET, rpcUrl }
-    });
-    const userAddress = await $store.wallet.getPKH();
-    store.updateUserAddress(userAddress as TezosAccountAddress);
-    $store.Tezos.setWalletProvider($store.wallet);
-  };
-
-  const disconnectWallet = async () => {
-    $store.wallet.client.destroy();
-    $store.wallet = undefined;
-  };
-
   onMount(async () => {
     const Tezos = new TezosToolkit(rpcUrl);
+    store.updateTezos(Tezos);
     const contract = await Tezos.wallet.at(dexAddress);
     const storage: Storage | undefined = await contract.storage();
 
     if (storage) {
       store.updateDexInfo({ ...storage });
-    }
-
-    const wallet = new BeaconWallet({
-      name: "Tezos dev portal dapp tutorial",
-      preferredNetwork: NetworkType.GHOSTNET
-    });
-    const activeAccount = await wallet.client.getActiveAccount();
-    if (activeAccount) {
-      const userAddress = await wallet.getPKH();
-      store.updateUserAddress(userAddress as TezosAccountAddress);
-      Tezos.setWalletProvider(wallet);
     }
 
     // fetches XTZ and tzBTC prices
@@ -90,6 +64,10 @@
 </style>
 
 <main>
-  <Sidebar />
-  <Interface />
+  {#if $store.Tezos}
+    <Sidebar />
+    <Interface />
+  {:else}
+    <div>Loading</div>
+  {/if}
 </main>

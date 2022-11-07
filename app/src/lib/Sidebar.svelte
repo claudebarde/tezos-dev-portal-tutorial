@@ -1,5 +1,6 @@
 <script lang="ts">
   import store from "../store";
+  import Wallet from "./Wallet.svelte";
 </script>
 
 <style lang="scss">
@@ -11,12 +12,6 @@
     display: grid;
     grid-template-rows: 20% 70% 10%;
     gap: 20px;
-
-    .sidebar__wallet {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-    }
 
     .sidebar__dex {
       display: flex;
@@ -32,10 +27,8 @@
   }
 </style>
 
-<div class="sidebar">
-  <div class="sidebar__wallet">
-    <button class="wallet-button">Connect wallet</button>
-  </div>
+<aside class="sidebar">
+  <Wallet />
   <div class="sidebar__dex">
     <button class="sidebar-button" on:click={() => store.updateView("swap")}>
       Swap
@@ -54,4 +47,4 @@
     </button>
   </div>
   <div class="sidebar__footer">Liquidity Baking</div>
-</div>
+</aside>

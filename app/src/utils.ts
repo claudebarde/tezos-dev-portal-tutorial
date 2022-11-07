@@ -15,3 +15,6 @@ export const displayTokenAmount = (amount_: BigNumber | number, token: token): s
             return (+amount.toFixed(2)).toLocaleString("en-US")
     }
 }
+
+export const shortenHash = (hash: string): string =>
+  hash ? hash.slice(0, 5) + "..." + hash.slice(-5) : "";
