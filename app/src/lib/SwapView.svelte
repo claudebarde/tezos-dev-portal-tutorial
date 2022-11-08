@@ -1,19 +1,37 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import UserInput from "./UserInput.svelte";
   import type { token } from "../types";
+  import { xtzToTokenTokenOutput, tokenToXtzXtzOutput } from "../lbUtils";
+  import store from "../store";
+  import { displayTokenAmount } from "../utils";
 
   let tokenFrom: token = "XTZ";
   let tokenTo: token = "tzBTC";
   let inputFrom = "";
   let inputTo = "";
+  let xtzToTzbtc = 0;
+  let tzbtcToXtz = 0;
 
   const switchTokens = () => {
     if (tokenFrom === "XTZ") {
       tokenFrom = "tzBTC";
       tokenTo = "XTZ";
+      // switches the values
+      if (inputFrom && inputTo) {
+        const tmpInputTo = inputTo;
+        inputTo = inputFrom;
+        inputFrom = tmpInputTo;
+      }
     } else {
       tokenFrom = "XTZ";
       tokenTo = "tzBTC";
+      // switches the values
+      if (inputFrom && inputTo) {
+        const tmpInputTo = inputTo;
+        inputTo = inputFrom;
+        inputFrom = tmpInputTo;
+      }
     }
   };
 
@@ -21,13 +39,51 @@
     const { token, val } = ev.detail;
     if (token === tokenFrom && val > 0) {
       inputFrom = val.toString();
-      inputTo = "6969";
-      // TODO: calculate the corresponding amount for tokenTo
+      inputTo = "";
+      if (tokenFrom === "XTZ") {
+        let tzbtcAmount = xtzToTokenTokenOutput({
+          xtzIn: val * 10 ** 6,
+          xtzPool: $store.dexInfo.xtzPool,
+          tokenPool: $store.dexInfo.tokenPool
+        });
+        if (tzbtcAmount) {
+          inputTo = tzbtcAmount.dividedBy(10 ** 8).toString();
+        }
+      } else if (tokenFrom === "tzBTC") {
+        let xtzAmount = tokenToXtzXtzOutput({
+          tokenIn: val * 10 ** 8,
+          xtzPool: $store.dexInfo.xtzPool,
+          tokenPool: $store.dexInfo.tokenPool
+        });
+        if (xtzAmount) {
+          inputTo = xtzAmount.dividedBy(10 ** 6).toString();
+        }
+      }
     } else {
       inputFrom = "";
       inputTo = "";
     }
   };
+
+  onMount(() => {
+    let tzbtcAmount = xtzToTokenTokenOutput({
+      xtzIn: 10 ** 6,
+      xtzPool: $store.dexInfo.xtzPool,
+      tokenPool: $store.dexInfo.tokenPool
+    });
+    if (tzbtcAmount) {
+      xtzToTzbtc = tzbtcAmount.toNumber();
+    }
+
+    let xtzAmount = tokenToXtzXtzOutput({
+      tokenIn: 10 ** 8,
+      xtzPool: $store.dexInfo.xtzPool,
+      tokenPool: $store.dexInfo.tokenPool
+    });
+    if (xtzAmount) {
+      tzbtcToXtz = xtzAmount.toNumber();
+    }
+  });
 </script>
 
 <style lang="scss">
@@ -76,6 +132,13 @@
       on:new-input={saveInput}
       disabled={true}
     />
+  </div>
+  <div>
+    {#if tokenFrom === "XTZ"}
+      Price rate: 1 XTZ = {displayTokenAmount(xtzToTzbtc, "tzBTC")} tzBTC
+    {:else}
+      Price rate: 1 tzBTC = {displayTokenAmount(tzbtcToXtz, "XTZ")} XTZ
+    {/if}
   </div>
   <button class="primary" disabled={!inputFrom || !inputTo}>Swap</button>
 </div>

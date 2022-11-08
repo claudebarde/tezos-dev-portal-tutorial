@@ -64,7 +64,7 @@
 </style>
 
 <main>
-  {#if $store.Tezos}
+  {#if $store.Tezos && $store.dexInfo}
     <Sidebar />
     <Interface />
   {:else}

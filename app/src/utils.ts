@@ -10,7 +10,7 @@ export const displayTokenAmount = (amount_: BigNumber | number, token: token): s
             if (amount < 100) {
                 return "> 0.000001"
             }
-            return (+(amount / 10 ** 8).toFixed(2)).toLocaleString("en-US");
+            return (+(amount / 10 ** 8).toFixed(8)).toLocaleString("en-US", { maximumSignificantDigits: 8 });
         case "SIRS":
             return (+amount.toFixed(2)).toLocaleString("en-US")
     }
