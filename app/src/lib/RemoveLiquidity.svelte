@@ -1,5 +1,7 @@
 <script lang="ts">
+  import store from "../store";
   import UserInput from "./UserInput.svelte";
+  import { removeLiquidityXtzTzbtcOut } from "../lbUtils";
 
   let inputSirs = "";
   let xtzOutput = 0;
@@ -9,8 +11,26 @@
     const { token, val } = ev.detail;
     if (token === "SIRS" && val > 0) {
       inputSirs = val.toString();
-      xtzOutput = 69;
-      tzbtcOutput = 6969;
+      const outputRes = removeLiquidityXtzTzbtcOut({
+        liquidityBurned: val,
+        totalLiquidity: $store.dexInfo.lqtTotal.toNumber(),
+        xtzPool: $store.dexInfo.xtzPool.toNumber(),
+        tokenPool: $store.dexInfo.tokenPool.toNumber()
+      });
+      if (outputRes) {
+        const { xtzOut, tzbtcOut } = outputRes;
+        xtzOutput = xtzOut
+          .dividedBy(10 ** 6)
+          .decimalPlaces(6)
+          .toNumber();
+        tzbtcOutput = tzbtcOut
+          .dividedBy(10 ** 8)
+          .decimalPlaces(8)
+          .toNumber();
+      } else {
+        xtzOutput = 0;
+        tzbtcOutput = 0;
+      }
     } else {
       inputSirs = "";
       xtzOutput = 0;
