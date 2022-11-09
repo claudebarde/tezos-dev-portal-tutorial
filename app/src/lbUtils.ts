@@ -1,3 +1,5 @@
+// from https://github.com/claudebarde/kukai-dex-calculations/blob/master/index.ts
+
 import BigNumber from "bignumber.js";
 
 const creditSubsidy = (xtzPool: BigNumber | number): BigNumber => {
@@ -76,6 +78,74 @@ export const tokenToXtzXtzOutput = (p: {
     return null;
   }
 };
+
+export const addLiquidityXtzIn = (
+  p: {
+    tokenIn: BigNumber | number,
+    xtzPool: BigNumber | number,
+    tokenPool: BigNumber | number
+  }
+): BigNumber | null => {
+  const { tokenIn, xtzPool, tokenPool } = p;
+  let tokenIn_ = new BigNumber(0);
+  let xtzPool_ = new BigNumber(0);
+  let tokenPool_ = new BigNumber(0);
+  try {
+    tokenIn_ = new BigNumber(tokenIn);
+    xtzPool_ = new BigNumber(xtzPool);
+    tokenPool_ = new BigNumber(tokenPool);
+  } catch (err) {
+    return null;
+  }
+  xtzPool_ = creditSubsidy(xtzPool_);
+
+  if (
+    tokenIn_.isGreaterThan(0) &&
+    xtzPool_.isGreaterThan(0) &&
+    tokenPool_.isGreaterThan(0)
+  ) {
+    return tokenIn_.times(xtzPool_).dividedBy(tokenPool_);
+  } else {
+    return null;
+  }
+}
+
+export const addLiquidityLiquidityCreated = (
+  p: {
+    xtzIn: BigNumber | number,
+    xtzPool: BigNumber | number,
+    totalLiquidity: BigNumber | number
+  }
+): BigNumber | null => {
+  const { xtzIn, xtzPool, totalLiquidity } = p;
+  let xtzIn_ = new BigNumber(0);
+  let xtzPool_ = new BigNumber(0);
+  let totalLiquidity_ = new BigNumber(0);
+  try {
+    xtzIn_ = new BigNumber(xtzIn);
+    xtzPool_ = new BigNumber(xtzPool);
+    totalLiquidity_ = new BigNumber(totalLiquidity);
+  } catch (err) {
+    return null;
+  }
+  xtzPool_ = creditSubsidy(xtzPool_);
+
+  if (xtzIn_.isGreaterThan(0) && xtzPool_.isGreaterThan(0)) {
+    if (totalLiquidity_.isEqualTo(0)) {
+      return new BigNumber(xtzIn)
+        .times(new BigNumber(totalLiquidity))
+        .dividedBy(new BigNumber(xtzPool));
+    } else if (totalLiquidity_.isGreaterThan(0)) {
+      return new BigNumber(xtzIn)
+        .times(new BigNumber(totalLiquidity))
+        .dividedBy(new BigNumber(xtzPool));
+    }
+
+    return null;
+  } else {
+    return null;
+  }
+}
 
 export const removeLiquidityXtzTzbtcOut = (p: {
   liquidityBurned: number;

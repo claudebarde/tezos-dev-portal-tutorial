@@ -18,7 +18,7 @@
     if (!isNaN(val)) {
       dispatch("new-input", { token, val });
     } else {
-      dispatch("new-input", { token, val: "" });
+      dispatch("new-input", { token, val: null });
     }
   };
 

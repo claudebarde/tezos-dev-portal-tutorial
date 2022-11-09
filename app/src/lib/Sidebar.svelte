@@ -30,17 +30,23 @@
 <aside class="sidebar">
   <Wallet />
   <div class="sidebar__dex">
-    <button class="sidebar-button" on:click={() => store.updateView("swap")}>
+    <button
+      class="sidebar-button"
+      class:active={$store.currentView === "swap"}
+      on:click={() => store.updateView("swap")}
+    >
       Swap
     </button>
     <button
       class="sidebar-button"
+      class:active={$store.currentView === "add-liquidity"}
       on:click={() => store.updateView("add-liquidity")}
     >
       Add liquidity
     </button>
     <button
       class="sidebar-button"
+      class:active={$store.currentView === "remove-liquidity"}
       on:click={() => store.updateView("remove-liquidity")}
     >
       Remove liquidity

@@ -1,23 +1,63 @@
 <script lang="ts">
+  import store from "../store";
   import UserInput from "./UserInput.svelte";
   import type { token } from "../types";
+  import {
+    xtzToTokenTokenOutput,
+    tokenToXtzXtzOutput,
+    addLiquidityLiquidityCreated
+  } from "../lbUtils";
 
   let inputXtz = "";
   let inputTzbtc = "";
   let sirsOutput = 0;
 
   const saveInput = ev => {
-    const { token, val } = ev.detail;
-    if (token === "XTZ" && val > 0) {
-      inputXtz = val.toString();
-      // TODO: calculate tzBTC amount
-      inputTzbtc = "6969";
-      sirsOutput = 69;
-    } else if (token === "tzBTC" && val > 0) {
-      inputTzbtc = val.toString();
-      // TODO: calculate XTZ amount
-      inputXtz = "6969";
-      sirsOutput = 69;
+    const { token, val }: { token: token; val: number | null } = ev.detail;
+    if (token === "XTZ" && val && val > 0) {
+      let tzbtcAmount = xtzToTokenTokenOutput({
+        xtzIn: val * 10 ** 6,
+        xtzPool: $store.dexInfo.xtzPool,
+        tokenPool: $store.dexInfo.tokenPool
+      });
+      if (tzbtcAmount) {
+        inputTzbtc = tzbtcAmount.dividedBy(10 ** 8).toPrecision(6);
+      } else {
+        inputTzbtc = "";
+      }
+
+      const liquidityCreated = addLiquidityLiquidityCreated({
+        xtzIn: val * 10 ** 6,
+        xtzPool: $store.dexInfo.xtzPool,
+        totalLiquidity: $store.dexInfo.lqtTotal
+      });
+      if (liquidityCreated) {
+        sirsOutput = liquidityCreated.decimalPlaces(4).toNumber();
+      } else {
+        sirsOutput = 0;
+      }
+    } else if (token === "tzBTC" && val && val > 0) {
+      let xtzAmount = tokenToXtzXtzOutput({
+        tokenIn: val * 10 ** 8,
+        xtzPool: $store.dexInfo.xtzPool,
+        tokenPool: $store.dexInfo.tokenPool
+      });
+      if (xtzAmount) {
+        inputXtz = xtzAmount.dividedBy(10 ** 6).toPrecision(8);
+
+        const liquidityCreated = addLiquidityLiquidityCreated({
+          xtzIn: xtzAmount,
+          xtzPool: $store.dexInfo.xtzPool,
+          totalLiquidity: $store.dexInfo.lqtTotal
+        });
+        if (liquidityCreated) {
+          sirsOutput = liquidityCreated.decimalPlaces(4).toNumber();
+        } else {
+          sirsOutput = 0;
+        }
+      } else {
+        inputXtz = "";
+      }
     } else {
       inputXtz = "";
       inputTzbtc = "";

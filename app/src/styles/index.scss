@@ -76,14 +76,19 @@ button {
 
     &.sidebar-button {
         background-color: transparent;
-        border: none;
+        border: solid 3px transparent;
         font-size: inherit;
         font-family: inherit;
         color: inherit;
         margin: 10px;
+        border-radius: 4px;
 
         &:hover {
             background-color: $powder-blue;
+        }
+
+        &.active {
+            border-color: $powder-blue;
         }
     }
 

@@ -9,11 +9,15 @@
 
 <style lang="scss">
   .interface-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    // display: flex;
+    // flex-direction: column;
+    // justify-content: space-between;
+    // align-items: center;
+    // position: relative;
+    display: grid;
+    grid-template-rows: 20% 60% 20%;
+    justify-items: center;
     align-items: center;
-    position: relative;
   }
 </style>
 
@@ -26,5 +30,7 @@
   {:else if $store.currentView === "remove-liquidity"}
     <RemoveLiquidity />
   {/if}
-  <UserStats />
+  {#if $store.userAddress}
+    <UserStats />
+  {/if}
 </div>

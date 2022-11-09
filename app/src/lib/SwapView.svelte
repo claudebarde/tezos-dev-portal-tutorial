@@ -47,7 +47,7 @@
           tokenPool: $store.dexInfo.tokenPool
         });
         if (tzbtcAmount) {
-          inputTo = tzbtcAmount.dividedBy(10 ** 8).toString();
+          inputTo = tzbtcAmount.dividedBy(10 ** 8).toPrecision(6);
         }
       } else if (tokenFrom === "tzBTC") {
         let xtzAmount = tokenToXtzXtzOutput({
@@ -56,7 +56,7 @@
           tokenPool: $store.dexInfo.tokenPool
         });
         if (xtzAmount) {
-          inputTo = xtzAmount.dividedBy(10 ** 6).toString();
+          inputTo = xtzAmount.dividedBy(10 ** 6).toPrecision(8);
         }
       }
     } else {

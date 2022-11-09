@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { fly } from "svelte/transition";
   import store from "../store";
   import { displayTokenAmount } from "../utils";
 </script>
@@ -31,7 +32,10 @@
   }
 </style>
 
-<div class="container user-stats-container">
+<div
+  class="container user-stats-container"
+  transition:fly={{ duration: 400, y: 200, delay: 500 }}
+>
   <div class="user-stats-container__info">
     <div>XTZ balance</div>
     <div>
