@@ -52,5 +52,5 @@
       Remove liquidity
     </button>
   </div>
-  <div class="sidebar__footer">Liquidity Baking</div>
+  <div class="sidebar__footer">Liquidity Baking DEX</div>
 </aside>

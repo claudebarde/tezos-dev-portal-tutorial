@@ -2,7 +2,7 @@
   import store from "../store";
   import SwapView from "./SwapView.svelte";
   import AddLiquidityView from "./AddLiquidityView.svelte";
-  import RemoveLiquidity from "./RemoveLiquidity.svelte";
+  import RemoveLiquidityView from "./RemoveLiquidityView.svelte";
   import UserStats from "./UserStats.svelte";
   import SirsStats from "./SirsStats.svelte";
 </script>
@@ -28,7 +28,7 @@
   {:else if $store.currentView === "add-liquidity"}
     <AddLiquidityView />
   {:else if $store.currentView === "remove-liquidity"}
-    <RemoveLiquidity />
+    <RemoveLiquidityView />
   {/if}
   {#if $store.userAddress}
     <UserStats />

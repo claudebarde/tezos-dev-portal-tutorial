@@ -3,8 +3,8 @@
   import { BeaconWallet } from "@taquito/beacon-wallet";
   import { NetworkType } from "@airgap/beacon-sdk";
   import store, { type TezosAccountAddress } from "../store";
-  import { rpcUrl, tzbtcAddress, sirsAddress } from "../config";
-  import { shortenHash, displayTokenAmount } from "../utils";
+  import { rpcUrl, tzbtcAddress, sirsAddress, network } from "../config";
+  import { shortenHash } from "../utils";
 
   let connectedNetwork = "";
   let walletIcon = "";
@@ -56,13 +56,13 @@
     if (!$store.wallet) {
       const wallet = new BeaconWallet({
         name: "Tezos dev portal dapp tutorial",
-        preferredNetwork: NetworkType.GHOSTNET
+        preferredNetwork: network
       });
       store.updateWallet(wallet);
     }
 
     await $store.wallet.requestPermissions({
-      network: { type: NetworkType.GHOSTNET, rpcUrl }
+      network: { type: network, rpcUrl }
     });
     const userAddress = (await $store.wallet.getPKH()) as TezosAccountAddress;
     store.updateUserAddress(userAddress);
@@ -87,7 +87,7 @@
   onMount(async () => {
     const wallet = new BeaconWallet({
       name: "Tezos dev portal dapp tutorial",
-      preferredNetwork: NetworkType.GHOSTNET
+      preferredNetwork: network
     });
     store.updateWallet(wallet);
     const activeAccount = await wallet.client.getActiveAccount();

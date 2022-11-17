@@ -44,7 +44,10 @@
         if (!isNaN(xtzPrice) && !isNaN(tzbtcPrice)) {
           // tzBTC price is given in XTZ by the API
           tzbtcPrice = tzbtcPrice * xtzPrice;
-          console.log(xtzPrice, tzbtcPrice);
+          store.updateExchangeRates([
+            { token: "XTZ", exchangeRate: xtzPrice },
+            { token: "tzBTC", exchangeRate: tzbtcPrice }
+          ]);
         }
       }
     }

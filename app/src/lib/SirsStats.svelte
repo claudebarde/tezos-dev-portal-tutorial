@@ -1,6 +1,26 @@
 <script lang="ts">
+  import { afterUpdate } from "svelte";
   import store from "../store";
   import { displayTokenAmount } from "../utils";
+
+  let totalValue = "";
+
+  afterUpdate(() => {
+    if ($store.dexInfo && $store.xtzExchangeRate && $store.tzbtcExchangeRate) {
+      const xtzValueInUsd = $store.dexInfo.xtzPool
+        .dividedBy(10 ** 6)
+        .times($store.xtzExchangeRate);
+      const tzbtcValueInUsd = $store.dexInfo.tokenPool
+        .dividedBy(10 ** 8)
+        .times($store.tzbtcExchangeRate);
+
+      totalValue = xtzValueInUsd
+        .plus(tzbtcValueInUsd)
+        .decimalPlaces(2)
+        .toNumber()
+        .toLocaleString("en-US");
+    }
+  });
 </script>
 
 <style lang="scss">
@@ -47,7 +67,13 @@
     </div>
     <div class="stats-container__info">
       <div>Total value</div>
-      <div>TODO</div>
+      <div>
+        {#if totalValue}
+          ${totalValue}
+        {:else}
+          ---
+        {/if}
+      </div>
     </div>
   {:else}
     Loading Sirius DEX details...

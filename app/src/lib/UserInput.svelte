@@ -6,19 +6,48 @@
 
   let currentToken: token;
   const dispatch = createEventDispatcher();
+  let insufficientBalance = false;
 
   export let inputVal: string,
     logoPos: "left" | "right",
     token: token,
-    disabled: boolean;
+    disabled: boolean,
+    reset: boolean;
+
+  const calculateInsufficientBalance = (val: number) => {
+    if ($store.userAddress) {
+      if (
+        (token === "XTZ" && !$store.userBalances.XTZ) ||
+        (token === "tzBTC" && !$store.userBalances.tzBTC)
+      ) {
+        insufficientBalance = true;
+      } else if (
+        token === "XTZ" &&
+        $store.userBalances.XTZ &&
+        $store.userBalances.XTZ < val * 10 ** 6
+      ) {
+        insufficientBalance = true;
+      } else if (
+        token === "tzBTC" &&
+        $store.userBalances.tzBTC &&
+        $store.userBalances.tzBTC < val * 10 ** 8
+      ) {
+        insufficientBalance = true;
+      } else {
+        insufficientBalance = false;
+      }
+    }
+  };
 
   const inputAmount = ev => {
     const val = +ev.target.value;
     // validates numeric input
     if (!isNaN(val)) {
-      dispatch("new-input", { token, val });
+      // checks if user has enough balance
+      calculateInsufficientBalance(val);
+      dispatch("new-input", { token, val, insufficientBalance });
     } else {
-      dispatch("new-input", { token, val: null });
+      dispatch("new-input", { token, val: null, insufficientBalance });
     }
   };
 
@@ -28,6 +57,13 @@
       currentToken = token;
     } else {
       currentToken = undefined;
+    }
+    // resets the input
+    if (reset && !disabled) {
+      insufficientBalance = false;
+      if (!isNaN(+inputVal)) {
+        calculateInsufficientBalance(+inputVal);
+      }
     }
   });
 </script>
@@ -40,7 +76,13 @@
       {#if logoPos === "left"}
         <img src={`images/${token}.png`} alt={token} />
       {/if}
-      <input type="text" value={inputVal} on:input={inputAmount} {disabled} />
+      <input
+        class:error={insufficientBalance}
+        type="text"
+        value={inputVal}
+        on:input={inputAmount}
+        {disabled}
+      />
       {#if logoPos === "right"}
         <img src={`images/${token}.png`} alt={token} />
       {/if}

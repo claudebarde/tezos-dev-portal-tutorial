@@ -12,8 +12,13 @@
   let inputTo = "";
   let xtzToTzbtc = 0;
   let tzbtcToXtz = 0;
+  let insufficientBalance = false;
+  let resetInputs = false;
 
   const switchTokens = () => {
+    resetInputs = true;
+    setTimeout(() => (resetInputs = false), 100);
+
     if (tokenFrom === "XTZ") {
       tokenFrom = "tzBTC";
       tokenTo = "XTZ";
@@ -36,11 +41,14 @@
   };
 
   const saveInput = ev => {
-    const { token, val } = ev.detail;
+    const { token, val, insufficientBalance: insufBlnc } = ev.detail;
+    insufficientBalance = insufBlnc;
+
     if (token === tokenFrom && val > 0) {
       inputFrom = val.toString();
       inputTo = "";
       if (tokenFrom === "XTZ") {
+        // calculates tzBTC amount
         let tzbtcAmount = xtzToTokenTokenOutput({
           xtzIn: val * 10 ** 6,
           xtzPool: $store.dexInfo.xtzPool,
@@ -50,6 +58,7 @@
           inputTo = tzbtcAmount.dividedBy(10 ** 8).toPrecision(6);
         }
       } else if (tokenFrom === "tzBTC") {
+        // calculates XTZ amount
         let xtzAmount = tokenToXtzXtzOutput({
           tokenIn: val * 10 ** 8,
           xtzPool: $store.dexInfo.xtzPool,
@@ -63,6 +72,10 @@
       inputFrom = "";
       inputTo = "";
     }
+  };
+
+  const swap = async () => {
+    console.log("swap");
   };
 
   onMount(() => {
@@ -121,6 +134,7 @@
       logoPos="left"
       on:new-input={saveInput}
       disabled={false}
+      reset={resetInputs}
     />
     <button class="transparent" on:click={switchTokens}>
       <img class="token-selector" src="images/repeat.svg" alt="switch" />
@@ -131,6 +145,7 @@
       logoPos="right"
       on:new-input={saveInput}
       disabled={true}
+      reset={resetInputs}
     />
   </div>
   <div>
@@ -140,5 +155,14 @@
       Price rate: 1 tzBTC = {displayTokenAmount(tzbtcToXtz, "XTZ")} XTZ
     {/if}
   </div>
-  <button class="primary" disabled={!inputFrom || !inputTo}>Swap</button>
+  <button
+    class="primary"
+    disabled={!inputFrom ||
+      !inputTo ||
+      !$store.userAddress ||
+      insufficientBalance}
+    on:click={swap}
+  >
+    Swap
+  </button>
 </div>

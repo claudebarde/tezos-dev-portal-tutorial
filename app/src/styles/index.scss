@@ -29,6 +29,10 @@ button {
         &:hover {
             transform: translateY(-2px);
         }
+
+        &:disabled {
+            text-decoration: line-through;
+        }
     }
 
     &.wallet-button {
@@ -134,6 +138,10 @@ h1 {
 
         &:focus {
             border-color: $powder-blue;
+        }
+
+        &.error {
+            border-color: $imperial-red;
         }
     }
 

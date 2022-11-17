@@ -12,7 +12,9 @@ interface State {
     userAddress: TezosAccountAddress;
     currentView: "swap" | "add-liquidity" | "remove-liquidity";
     userBalances: { XTZ: null | number; tzBTC: null | number; SIRS: null | number };
-    dexInfo: Storage | undefined
+    dexInfo: Storage | undefined;
+    xtzExchangeRate: number | null;
+    tzbtcExchangeRate: number | null
 };
 
 const initialState: State = {
@@ -21,7 +23,9 @@ const initialState: State = {
     userAddress: undefined,
     currentView: "swap",
     userBalances: { XTZ: null, tzBTC: null, SIRS: null },
-    dexInfo: undefined
+    dexInfo: undefined,
+    xtzExchangeRate: null,
+    tzbtcExchangeRate: null
 };
 
 const store = writable(initialState);
@@ -50,6 +54,21 @@ const state = {
         }),
     updateDexInfo: (info: Storage) =>
         store.update(store => ({ ...store, dexInfo: info })),
+    updateExchangeRates: (updates: Array<{ token: Exclude<token, "SIRS">, exchangeRate: number | null }>) =>
+        store.update(store => {
+            return updates.reduce(
+                (acc, update) => {
+                    if (update.token === "XTZ") {
+                        return { ...acc, xtzExchangeRate: update.exchangeRate }
+                    } else if (update.token === "tzBTC") {
+                        return { ...acc, tzbtcExchangeRate: update.exchangeRate }
+                    } else {
+                        return acc
+                    }
+                },
+                store
+            )
+        }),
 };
 
 export default state;
