@@ -1,40 +1,13 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { BeaconWallet } from "@taquito/beacon-wallet";
-  import { NetworkType } from "@airgap/beacon-sdk";
   import store, { type TezosAccountAddress } from "../store";
-  import { rpcUrl, tzbtcAddress, sirsAddress, network } from "../config";
-  import { shortenHash } from "../utils";
+  import { rpcUrl, network } from "../config";
+  import { shortenHash, fetchBalances } from "../utils";
 
   let connectedNetwork = "";
   let walletIcon = "";
   let walletName = "";
-
-  const fetchBalances = async (userAddress: TezosAccountAddress) => {
-    try {
-      const res = await fetch(
-        `https://api.tzkt.io/v1/tokens/balances?account=${userAddress}&token.contract.in=${tzbtcAddress},${sirsAddress}`
-      );
-      if (res.status === 200) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length === 2) {
-          const tzbtcBalance = +data[0].balance;
-          const sirsBalance = +data[1].balance;
-          if (!isNaN(tzbtcBalance) && !isNaN(sirsBalance)) {
-            store.updateUserBalance("tzBTC", tzbtcBalance);
-            store.updateUserBalance("SIRS", sirsBalance);
-          } else {
-            store.updateUserBalance("tzBTC", null);
-            store.updateUserBalance("SIRS", null);
-          }
-        }
-      } else {
-        throw "Unable to fetch tzBTC and SIRS balances";
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   const getWalletInfo = async (wallet: BeaconWallet) => {
     // finds account info
@@ -99,8 +72,15 @@
       const balance = await $store.Tezos.tz.getBalance(userAddress);
       store.updateUserBalance("XTZ", balance ? balance.toNumber() : undefined);
       // fetches token balances
-      await fetchBalances(userAddress);
       await getWalletInfo(wallet);
+      const res = await fetchBalances(userAddress);
+      if (res) {
+        store.updateUserBalance("tzBTC", res.tzbtcBalance);
+        store.updateUserBalance("SIRS", res.sirsBalance);
+      } else {
+        store.updateUserBalance("tzBTC", null);
+        store.updateUserBalance("SIRS", null);
+      }
     }
   });
 </script>

@@ -2,10 +2,15 @@
   import store from "../store";
   import UserInput from "./UserInput.svelte";
   import { removeLiquidityXtzTzbtcOut } from "../lbUtils";
+  import { TxStatus } from "../types";
+  import { calcDeadline } from "../utils";
+  import { dexAddress } from "../config";
 
   let inputSirs = "";
   let xtzOutput = 0;
   let tzbtcOutput = 0;
+  let resetInput = false;
+  let removeLiquidityStatus = TxStatus.NoTransaction;
 
   const saveInput = ev => {
     const { token, val } = ev.detail;
@@ -35,6 +40,38 @@
       inputSirs = "";
       xtzOutput = 0;
       tzbtcOutput = 0;
+    }
+  };
+
+  const removeLiquidity = async () => {
+    try {
+      if (inputSirs) {
+        removeLiquidityStatus = TxStatus.Loading;
+
+        const lbContract = await $store.Tezos.wallet.at(dexAddress);
+        const deadline = calcDeadline();
+        const op = await lbContract.methodsObject
+          .removeLiquidity({
+            to: $store.userAddress,
+            lqtBurned: inputSirs,
+            minXtzWithdrawn: xtzOutput,
+            minTokensWithdrawn: tzbtcOutput,
+            deadline
+          })
+          .send();
+        await op.confirmation();
+
+        removeLiquidityStatus = TxStatus.Success;
+      } else {
+        throw "Missing value for SIRS";
+      }
+    } catch (error) {
+      console.error(error);
+      removeLiquidityStatus = TxStatus.Error;
+    } finally {
+      setTimeout(() => {
+        removeLiquidityStatus = TxStatus.NoTransaction;
+      }, 3000);
     }
   };
 </script>
@@ -89,6 +126,7 @@
       logoPos="left"
       on:new-input={saveInput}
       disabled={false}
+      reset={resetInput}
     />
   </div>
   <img src="images/arrow-down.svg" alt="arrow-down" />
@@ -103,5 +141,7 @@
       <span>{tzbtcOutput} tzBTC</span>
     </div>
   </div>
-  <button class="primary" disabled={!inputSirs}> Remove liquidity </button>
+  <button class="primary" disabled={!inputSirs} on:click={removeLiquidity}>
+    Remove liquidity
+  </button>
 </div>

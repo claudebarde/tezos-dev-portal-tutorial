@@ -1,6 +1,7 @@
 // from https://github.com/claudebarde/kukai-dex-calculations/blob/master/index.ts
 
 import BigNumber from "bignumber.js";
+import type { token } from "./types"
 
 const creditSubsidy = (xtzPool: BigNumber | number): BigNumber => {
   if (BigNumber.isBigNumber(xtzPool)) {
@@ -181,5 +182,30 @@ export const removeLiquidityXtzTzbtcOut = (p: {
     };
   } else {
     return null;
+  }
+};
+
+export const calcSlippageValue = (token: token, value: number, slippage: number, formatWithDecimals = false): number => {
+  if (token === "XTZ") {
+    const tokens = Math.floor(
+      value * 10 ** 6 - (value * 10 ** 6 * slippage) / 100
+    );
+    if (formatWithDecimals) {
+      return tokens / 10 ** 6;
+    } else {
+      return tokens;
+    }
+  } else {
+    const formattedTzbtc = Math.floor(
+      value * 10 ** 8
+    );
+    const tokens = Math.floor(
+      +formattedTzbtc - (+formattedTzbtc * slippage) / 100
+    );
+    if (formatWithDecimals) {
+      return tokens / 10 ** 8;
+    } else {
+      return tokens;
+    }
   }
 };

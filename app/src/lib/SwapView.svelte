@@ -1,10 +1,16 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { OpKind } from "@taquito/taquito";
   import UserInput from "./UserInput.svelte";
-  import type { token } from "../types";
-  import { xtzToTokenTokenOutput, tokenToXtzXtzOutput } from "../lbUtils";
+  import { type token, TxStatus } from "../types";
+  import {
+    xtzToTokenTokenOutput,
+    tokenToXtzXtzOutput,
+    calcSlippageValue
+  } from "../lbUtils";
   import store from "../store";
-  import { displayTokenAmount } from "../utils";
+  import { displayTokenAmount, fetchBalances, calcDeadline } from "../utils";
+  import { dexAddress, tzbtcAddress, XTZ, tzBTC } from "../config";
 
   let tokenFrom: token = "XTZ";
   let tokenTo: token = "tzBTC";
@@ -12,8 +18,12 @@
   let inputTo = "";
   let xtzToTzbtc = 0;
   let tzbtcToXtz = 0;
+  let slippage: "0.1" | "0.5" | "1" = "0.1";
   let insufficientBalance = false;
   let resetInputs = false;
+  let swapStatus = TxStatus.NoTransaction;
+
+  //TODO: add slippage selection
 
   const switchTokens = () => {
     resetInputs = true;
@@ -50,22 +60,22 @@
       if (tokenFrom === "XTZ") {
         // calculates tzBTC amount
         let tzbtcAmount = xtzToTokenTokenOutput({
-          xtzIn: val * 10 ** 6,
+          xtzIn: val * 10 ** XTZ.decimals,
           xtzPool: $store.dexInfo.xtzPool,
           tokenPool: $store.dexInfo.tokenPool
         });
         if (tzbtcAmount) {
-          inputTo = tzbtcAmount.dividedBy(10 ** 8).toPrecision(6);
+          inputTo = tzbtcAmount.dividedBy(10 ** tzBTC.decimals).toPrecision(6);
         }
       } else if (tokenFrom === "tzBTC") {
         // calculates XTZ amount
         let xtzAmount = tokenToXtzXtzOutput({
-          tokenIn: val * 10 ** 8,
+          tokenIn: val * 10 ** tzBTC.decimals,
           xtzPool: $store.dexInfo.xtzPool,
           tokenPool: $store.dexInfo.tokenPool
         });
         if (xtzAmount) {
-          inputTo = xtzAmount.dividedBy(10 ** 6).toPrecision(8);
+          inputTo = xtzAmount.dividedBy(10 ** XTZ.decimals).toPrecision(8);
         }
       }
     } else {
@@ -75,12 +85,87 @@
   };
 
   const swap = async () => {
-    console.log("swap");
+    try {
+      if (isNaN(+inputFrom) || isNaN(+inputTo)) {
+        return;
+      }
+      swapStatus = TxStatus.Loading;
+      const lbContract = await $store.Tezos.wallet.at(dexAddress);
+      const deadline = calcDeadline();
+      if (tokenFrom === "XTZ") {
+        // selling tzbtc for xtz => tokenToXTZ
+        const tzBtcContract = await $store.Tezos.wallet.at(tzbtcAddress);
+        const tokensSold = Math.floor(+inputTo * 10 ** tzBTC.decimals);
+        const minXtzBought = calcSlippageValue("XTZ", +inputFrom, 0.1);
+        let batch = $store.Tezos.wallet
+          .batch()
+          .withContractCall(tzBtcContract.methods.approve(dexAddress, 0))
+          .withContractCall(
+            tzBtcContract.methods.approve(dexAddress, tokensSold)
+          )
+          .withContractCall(
+            lbContract.methods.tokenToXtz(
+              $store.userAddress,
+              tokensSold,
+              minXtzBought,
+              deadline
+            )
+          );
+        const batchOp = await batch.send();
+        await batchOp.confirmation();
+      } else {
+        // selling xtz for tzbtc => xtzToToken
+        const minTokensBought = calcSlippageValue("tzBTC", +inputFrom, 0.1);
+        let batch = $store.Tezos.wallet.batch([
+          {
+            kind: OpKind.TRANSACTION,
+            ...lbContract.methods
+              .xtzToToken($store.userAddress, minTokensBought, deadline)
+              .toTransferParams(),
+            amount: +inputTo * 10 ** XTZ.decimals,
+            mutez: true
+          }
+        ]);
+
+        const batchOp = await batch.send();
+        await batchOp.confirmation();
+        /*const op = await lbContract.methods
+          .xtzToToken($store.userAddress, minTokensBought, deadline)
+          .send({ amount: +amountInXTZ * 10 ** 6, mutez: true });
+        await op.confirmation();*/
+      }
+      inputFrom = "";
+      inputTo = "";
+      swapStatus = TxStatus.Success;
+      // fetches new XTZ balance
+      const xtzBalance = await $store.Tezos.tz.getBalance($store.userAddress);
+      if (xtzBalance) {
+        store.updateUserBalance("XTZ", xtzBalance.toNumber());
+      } else {
+        store.updateUserBalance("XTZ", null);
+      }
+      // fetches new tzBTC balance
+      const res = await fetchBalances($store.userAddress);
+      if (res) {
+        store.updateUserBalance("tzBTC", res.tzbtcBalance);
+        store.updateUserBalance("SIRS", res.sirsBalance);
+      } else {
+        store.updateUserBalance("tzBTC", null);
+        store.updateUserBalance("SIRS", null);
+      }
+    } catch (error) {
+      console.log(error);
+      swapStatus = TxStatus.Error;
+    } finally {
+      setTimeout(() => {
+        swapStatus = TxStatus.NoTransaction;
+      }, 3000);
+    }
   };
 
   onMount(() => {
     let tzbtcAmount = xtzToTokenTokenOutput({
-      xtzIn: 10 ** 6,
+      xtzIn: 10 ** XTZ.decimals,
       xtzPool: $store.dexInfo.xtzPool,
       tokenPool: $store.dexInfo.tokenPool
     });
@@ -89,7 +174,7 @@
     }
 
     let xtzAmount = tokenToXtzXtzOutput({
-      tokenIn: 10 ** 8,
+      tokenIn: 10 ** tzBTC.decimals,
       xtzPool: $store.dexInfo.xtzPool,
       tokenPool: $store.dexInfo.tokenPool
     });
@@ -149,6 +234,21 @@
     />
   </div>
   <div>
+    Slippage:
+    <span>
+      <input type="radio" name="slippage" bind:group={slippage} value="0.1" />
+      0.1%
+    </span>
+    <span>
+      <input type="radio" name="slippage" bind:group={slippage} value="0.5" />
+      0.5%
+    </span>
+    <span>
+      <input type="radio" name="slippage" bind:group={slippage} value="1" />
+      1%
+    </span>
+  </div>
+  <div>
     {#if tokenFrom === "XTZ"}
       Price rate: 1 XTZ = {displayTokenAmount(xtzToTzbtc, "tzBTC")} tzBTC
     {:else}
@@ -160,7 +260,8 @@
     disabled={!inputFrom ||
       !inputTo ||
       !$store.userAddress ||
-      insufficientBalance}
+      insufficientBalance ||
+      swapStatus !== TxStatus.NoTransaction}
     on:click={swap}
   >
     Swap

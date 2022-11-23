@@ -1,16 +1,21 @@
 <script lang="ts">
   import store from "../store";
   import UserInput from "./UserInput.svelte";
-  import type { token } from "../types";
+  import { type token, TxStatus } from "../types";
   import {
     xtzToTokenTokenOutput,
     tokenToXtzXtzOutput,
     addLiquidityLiquidityCreated
   } from "../lbUtils";
+  import { dexAddress, tzbtcAddress } from "../config";
+  import { calcDeadline } from "../utils";
 
   let inputXtz = "";
   let inputTzbtc = "";
   let sirsOutput = 0;
+  let addLiquidityStatus = TxStatus.NoTransaction;
+  let resetXtzInput = false;
+  let resetTzbtcInput = false;
 
   const saveInput = ev => {
     const { token, val }: { token: token; val: number | null } = ev.detail;
@@ -32,7 +37,7 @@
         totalLiquidity: $store.dexInfo.lqtTotal
       });
       if (liquidityCreated) {
-        sirsOutput = liquidityCreated.decimalPlaces(4).toNumber();
+        sirsOutput = Math.floor(liquidityCreated.toNumber());
       } else {
         sirsOutput = 0;
       }
@@ -51,7 +56,7 @@
           totalLiquidity: $store.dexInfo.lqtTotal
         });
         if (liquidityCreated) {
-          sirsOutput = liquidityCreated.decimalPlaces(4).toNumber();
+          sirsOutput = Math.floor(liquidityCreated.toNumber());
         } else {
           sirsOutput = 0;
         }
@@ -62,6 +67,45 @@
       inputXtz = "";
       inputTzbtc = "";
       sirsOutput = 0;
+    }
+  };
+
+  const addLiquidity = async () => {
+    try {
+      if (inputXtz && inputTzbtc && sirsOutput) {
+        addLiquidityStatus = TxStatus.Loading;
+
+        const lbContract = await $store.Tezos.wallet.at(dexAddress);
+        const tzBtcContract = await $store.Tezos.wallet.at(tzbtcAddress);
+        const deadline = calcDeadline();
+        const batch = $store.Tezos.wallet
+          .batch()
+          .withContractCall(tzBtcContract.methods.approve(dexAddress, 0))
+          .withContractCall(
+            tzBtcContract.methods.approve(dexAddress, +inputTzbtc)
+          )
+          .withContractCall(
+            lbContract.methodsObject.addLiquidity({
+              owner: $store.userAddress,
+              minLqtMinted: sirsOutput,
+              maxTokensDeposited: inputTzbtc,
+              deadline
+            })
+          );
+        const batchOp = await batch.send();
+        await batchOp.confirmation();
+
+        addLiquidityStatus = TxStatus.Success;
+      } else {
+        throw "Missing value for XTZ, tzBTC or SIRS";
+      }
+    } catch (error) {
+      console.error(error);
+      addLiquidityStatus = TxStatus.Error;
+    } finally {
+      setTimeout(() => {
+        addLiquidityStatus = TxStatus.NoTransaction;
+      }, 3000);
     }
   };
 </script>
@@ -109,6 +153,7 @@
       logoPos="left"
       on:new-input={saveInput}
       disabled={false}
+      reset={resetXtzInput}
     />
     <UserInput
       token="tzBTC"
@@ -116,13 +161,18 @@
       logoPos="right"
       on:new-input={saveInput}
       disabled={false}
+      reset={resetTzbtcInput}
     />
   </div>
   <div class="add-liquidity-output">
     <img src="images/SIRS.png" alt="SIRS" />
     <span>{sirsOutput} SIRS</span>
   </div>
-  <button class="primary" disabled={!inputXtz || !inputTzbtc}>
+  <button
+    class="primary"
+    disabled={!inputXtz || !inputTzbtc}
+    on:click={addLiquidity}
+  >
     Add liquidity
   </button>
 </div>
