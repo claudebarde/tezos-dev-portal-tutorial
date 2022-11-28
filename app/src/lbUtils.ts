@@ -1,7 +1,7 @@
 // from https://github.com/claudebarde/kukai-dex-calculations/blob/master/index.ts
 
 import BigNumber from "bignumber.js";
-import type { token } from "./types"
+import type { token } from "./types";
 
 const creditSubsidy = (xtzPool: BigNumber | number): BigNumber => {
   if (BigNumber.isBigNumber(xtzPool)) {
@@ -9,6 +9,14 @@ const creditSubsidy = (xtzPool: BigNumber | number): BigNumber => {
   } else {
     return new BigNumber(xtzPool).plus(new BigNumber(2500000));
   }
+};
+
+const ceilingDiv = (x: BigNumber, y: BigNumber): BigNumber => {
+  const result = x.mod(y);
+  if (result.isGreaterThanOrEqualTo(new BigNumber(0))) {
+    return x.dividedBy(y).plus(new BigNumber(1));
+  }
+  return x.dividedBy(y);
 };
 
 export const xtzToTokenTokenOutput = (p: {
@@ -80,20 +88,18 @@ export const tokenToXtzXtzOutput = (p: {
   }
 };
 
-export const addLiquidityXtzIn = (
-  p: {
-    tokenIn: BigNumber | number,
-    xtzPool: BigNumber | number,
-    tokenPool: BigNumber | number
-  }
-): BigNumber | null => {
+export const addLiquidityXtzIn = (p: {
+  tokenIn: BigNumber | number;
+  xtzPool: BigNumber | number;
+  tokenPool: BigNumber | number;
+}): BigNumber | null => {
   const { tokenIn, xtzPool, tokenPool } = p;
   let tokenIn_ = new BigNumber(0);
   let xtzPool_ = new BigNumber(0);
   let tokenPool_ = new BigNumber(0);
   try {
     tokenIn_ = new BigNumber(tokenIn);
-    xtzPool_ = new BigNumber(xtzPool);
+    xtzPool_ = creditSubsidy(xtzPool);
     tokenPool_ = new BigNumber(tokenPool);
   } catch (err) {
     return null;
@@ -109,15 +115,41 @@ export const addLiquidityXtzIn = (
   } else {
     return null;
   }
-}
+};
 
-export const addLiquidityLiquidityCreated = (
-  p: {
-    xtzIn: BigNumber | number,
-    xtzPool: BigNumber | number,
-    totalLiquidity: BigNumber | number
+export const addLiquidityTokenIn = (p: {
+  xtzIn: BigNumber | number;
+  xtzPool: BigNumber | number;
+  tokenPool: BigNumber | number;
+}): BigNumber | null => {
+  const { xtzIn, xtzPool, tokenPool } = p;
+  let xtzIn_ = new BigNumber(0);
+  let xtzPool_ = new BigNumber(0);
+  let tokenPool_ = new BigNumber(0);
+  try {
+    xtzIn_ = new BigNumber(xtzIn);
+    xtzPool_ = creditSubsidy(xtzPool);
+    tokenPool_ = new BigNumber(tokenPool);
+  } catch (err) {
+    return null;
   }
-): BigNumber | null => {
+  if (
+    xtzIn_.isGreaterThan(0) &&
+    xtzPool_.isGreaterThan(0) &&
+    tokenPool_.isGreaterThan(0)
+  ) {
+    // cdiv(xtzIn_ * tokenPool_, xtzPool_)
+    return ceilingDiv(xtzIn_.times(tokenPool_), xtzPool_);
+  } else {
+    return null;
+  }
+};
+
+export const addLiquidityLiquidityCreated = (p: {
+  xtzIn: BigNumber | number;
+  xtzPool: BigNumber | number;
+  totalLiquidity: BigNumber | number;
+}): BigNumber | null => {
   const { xtzIn, xtzPool, totalLiquidity } = p;
   let xtzIn_ = new BigNumber(0);
   let xtzPool_ = new BigNumber(0);
@@ -146,7 +178,7 @@ export const addLiquidityLiquidityCreated = (
   } else {
     return null;
   }
-}
+};
 
 export const removeLiquidityXtzTzbtcOut = (p: {
   liquidityBurned: number;
@@ -185,27 +217,15 @@ export const removeLiquidityXtzTzbtcOut = (p: {
   }
 };
 
-export const calcSlippageValue = (token: token, value: number, slippage: number, formatWithDecimals = false): number => {
+export const calcSlippageValue = (
+  token: token,
+  value: number,
+  slippage: number
+): number => {
   if (token === "XTZ") {
-    const tokens = Math.floor(
-      value * 10 ** 6 - (value * 10 ** 6 * slippage) / 100
-    );
-    if (formatWithDecimals) {
-      return tokens / 10 ** 6;
-    } else {
-      return tokens;
-    }
+    return Math.floor(value * 10 ** 6 - (+value * 10 ** 6 * slippage) / 100);
   } else {
-    const formattedTzbtc = Math.floor(
-      value * 10 ** 8
-    );
-    const tokens = Math.floor(
-      +formattedTzbtc - (+formattedTzbtc * slippage) / 100
-    );
-    if (formatWithDecimals) {
-      return tokens / 10 ** 8;
-    } else {
-      return tokens;
-    }
+    const formattedTzbtc = Math.floor(+value * 10 ** 8);
+    return Math.floor(+formattedTzbtc - (+formattedTzbtc * slippage) / 100);
   }
 };

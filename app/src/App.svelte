@@ -5,6 +5,7 @@
   import { rpcUrl, dexAddress } from "./config";
   import Sidebar from "./lib/Sidebar.svelte";
   import Interface from "./lib/Interface.svelte";
+  import Toast from "./lib/Toast.svelte";
   import type { Storage } from "./types";
   import { fetchExchangeRates } from "./utils";
 
@@ -47,6 +48,7 @@
 </style>
 
 <main>
+  <Toast />
   {#if $store.Tezos && $store.dexInfo}
     <Sidebar />
     <Interface />

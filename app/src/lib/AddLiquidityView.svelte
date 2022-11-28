@@ -1,14 +1,15 @@
 <script lang="ts">
+  import { OpKind } from "@taquito/taquito";
   import store from "../store";
   import UserInput from "./UserInput.svelte";
   import { type token, TxStatus } from "../types";
   import {
-    xtzToTokenTokenOutput,
+    addLiquidityTokenIn,
     tokenToXtzXtzOutput,
     addLiquidityLiquidityCreated
   } from "../lbUtils";
-  import { dexAddress, tzbtcAddress } from "../config";
-  import { calcDeadline } from "../utils";
+  import { dexAddress, tzbtcAddress, XTZ, tzBTC } from "../config";
+  import { calcDeadline, fetchBalances } from "../utils";
 
   let inputXtz = "";
   let inputTzbtc = "";
@@ -20,7 +21,8 @@
   const saveInput = ev => {
     const { token, val }: { token: token; val: number | null } = ev.detail;
     if (token === "XTZ" && val && val > 0) {
-      let tzbtcAmount = xtzToTokenTokenOutput({
+      inputXtz = val.toString();
+      let tzbtcAmount = addLiquidityTokenIn({
         xtzIn: val * 10 ** 6,
         xtzPool: $store.dexInfo.xtzPool,
         tokenPool: $store.dexInfo.tokenPool
@@ -42,6 +44,7 @@
         sirsOutput = 0;
       }
     } else if (token === "tzBTC" && val && val > 0) {
+      inputTzbtc = val.toString();
       let xtzAmount = tokenToXtzXtzOutput({
         tokenIn: val * 10 ** 8,
         xtzPool: $store.dexInfo.xtzPool,
@@ -74,37 +77,84 @@
     try {
       if (inputXtz && inputTzbtc && sirsOutput) {
         addLiquidityStatus = TxStatus.Loading;
+        store.updateToast(
+          true,
+          "Adding liquidity, waiting for confirmation..."
+        );
+
+        const tzbtcForLiquidity = Math.floor(
+          +inputTzbtc * 10 ** tzBTC.decimals
+        );
 
         const lbContract = await $store.Tezos.wallet.at(dexAddress);
         const tzBtcContract = await $store.Tezos.wallet.at(tzbtcAddress);
-        const deadline = calcDeadline();
-        const batch = $store.Tezos.wallet
-          .batch()
-          .withContractCall(tzBtcContract.methods.approve(dexAddress, 0))
-          .withContractCall(
-            tzBtcContract.methods.approve(dexAddress, +inputTzbtc)
-          )
-          .withContractCall(
-            lbContract.methodsObject.addLiquidity({
-              owner: $store.userAddress,
-              minLqtMinted: sirsOutput,
-              maxTokensDeposited: inputTzbtc,
-              deadline
-            })
-          );
+
+        const batch = $store.Tezos.wallet.batch([
+          {
+            kind: OpKind.TRANSACTION,
+            ...tzBtcContract.methods.approve(dexAddress, 0).toTransferParams()
+          },
+          {
+            kind: OpKind.TRANSACTION,
+            ...tzBtcContract.methods
+              .approve(dexAddress, tzbtcForLiquidity)
+              .toTransferParams()
+          },
+          {
+            kind: OpKind.TRANSACTION,
+            ...lbContract.methodsObject
+              .addLiquidity({
+                owner: $store.userAddress,
+                minLqtMinted: sirsOutput,
+                maxTokensDeposited: tzbtcForLiquidity,
+                deadline: calcDeadline()
+              })
+              .toTransferParams(),
+            amount: +inputXtz
+          },
+          {
+            kind: OpKind.TRANSACTION,
+            ...tzBtcContract.methods.approve(dexAddress, 0).toTransferParams()
+          }
+        ]);
         const batchOp = await batch.send();
         await batchOp.confirmation();
 
         addLiquidityStatus = TxStatus.Success;
+        inputXtz = "";
+        inputTzbtc = "";
+        sirsOutput = 0;
+
+        //NOTE: refactor xtz balance fetching into fetchBalances
+        // fetches new XTZ balance
+        const xtzBalance = await $store.Tezos.tz.getBalance($store.userAddress);
+        if (xtzBalance) {
+          store.updateUserBalance("XTZ", xtzBalance.toNumber());
+        } else {
+          store.updateUserBalance("XTZ", null);
+        }
+        // fetches new tzBTC and SIRS balances
+        const res = await fetchBalances($store.userAddress);
+        if (res) {
+          store.updateUserBalance("tzBTC", res.tzbtcBalance);
+          store.updateUserBalance("SIRS", res.sirsBalance);
+        } else {
+          store.updateUserBalance("tzBTC", null);
+          store.updateUserBalance("SIRS", null);
+        }
       } else {
         throw "Missing value for XTZ, tzBTC or SIRS";
       }
+
+      store.updateToast(true, "Liquidity successfully added!");
     } catch (error) {
       console.error(error);
       addLiquidityStatus = TxStatus.Error;
+      store.updateToast(true, "An error has occurred");
     } finally {
       setTimeout(() => {
         addLiquidityStatus = TxStatus.NoTransaction;
+        store.showToast(false);
       }, 3000);
     }
   };
@@ -170,9 +220,19 @@
   </div>
   <button
     class="primary"
-    disabled={!inputXtz || !inputTzbtc}
+    disabled={!inputXtz || !inputTzbtc || !$store.userAddress}
     on:click={addLiquidity}
   >
-    Add liquidity
+    {#if addLiquidityStatus === TxStatus.Loading}
+      <div class="spinner">
+        <div />
+        <div />
+        <div />
+        <div />
+      </div>
+      <span> Adding liquidity </span>
+    {:else}
+      Add liquidity
+    {/if}
   </button>
 </div>

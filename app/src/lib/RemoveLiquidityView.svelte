@@ -3,8 +3,8 @@
   import UserInput from "./UserInput.svelte";
   import { removeLiquidityXtzTzbtcOut } from "../lbUtils";
   import { TxStatus } from "../types";
-  import { calcDeadline } from "../utils";
-  import { dexAddress } from "../config";
+  import { calcDeadline, fetchBalances } from "../utils";
+  import { dexAddress, XTZ, tzBTC } from "../config";
 
   let inputSirs = "";
   let xtzOutput = 0;
@@ -47,30 +47,57 @@
     try {
       if (inputSirs) {
         removeLiquidityStatus = TxStatus.Loading;
+        store.updateToast(
+          true,
+          "Removing liquidity, waiting for confirmation..."
+        );
 
         const lbContract = await $store.Tezos.wallet.at(dexAddress);
-        const deadline = calcDeadline();
         const op = await lbContract.methodsObject
           .removeLiquidity({
             to: $store.userAddress,
             lqtBurned: inputSirs,
-            minXtzWithdrawn: xtzOutput,
-            minTokensWithdrawn: tzbtcOutput,
-            deadline
+            minXtzWithdrawn: Math.floor(xtzOutput * 10 ** XTZ.decimals),
+            minTokensWithdrawn: Math.floor(tzbtcOutput * 10 ** tzBTC.decimals),
+            deadline: calcDeadline()
           })
           .send();
         await op.confirmation();
 
         removeLiquidityStatus = TxStatus.Success;
+        inputSirs = "";
+        xtzOutput = 0;
+        tzbtcOutput = 0;
+
+        // fetches new XTZ balance
+        const xtzBalance = await $store.Tezos.tz.getBalance($store.userAddress);
+        if (xtzBalance) {
+          store.updateUserBalance("XTZ", xtzBalance.toNumber());
+        } else {
+          store.updateUserBalance("XTZ", null);
+        }
+        // fetches new tzBTC and SIRS balances
+        const res = await fetchBalances($store.userAddress);
+        if (res) {
+          store.updateUserBalance("tzBTC", res.tzbtcBalance);
+          store.updateUserBalance("SIRS", res.sirsBalance);
+        } else {
+          store.updateUserBalance("tzBTC", null);
+          store.updateUserBalance("SIRS", null);
+        }
+
+        store.updateToast(true, "Liquidity successfully removed!");
       } else {
         throw "Missing value for SIRS";
       }
     } catch (error) {
       console.error(error);
       removeLiquidityStatus = TxStatus.Error;
+      store.updateToast(true, "An error has occurred");
     } finally {
       setTimeout(() => {
         removeLiquidityStatus = TxStatus.NoTransaction;
+        store.showToast(false);
       }, 3000);
     }
   };
