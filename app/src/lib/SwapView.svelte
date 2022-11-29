@@ -139,19 +139,14 @@
       inputTo = "";
       minimumOutput = 0;
       swapStatus = TxStatus.Success;
-      // fetches new XTZ balance
-      const xtzBalance = await $store.Tezos.tz.getBalance($store.userAddress);
-      if (xtzBalance) {
-        store.updateUserBalance("XTZ", xtzBalance.toNumber());
-      } else {
-        store.updateUserBalance("XTZ", null);
-      }
-      // fetches new tzBTC balance
-      const res = await fetchBalances($store.userAddress);
+      // fetches user's XTZ, tzBTC and SIRS balances
+      const res = await fetchBalances($store.Tezos, $store.userAddress);
       if (res) {
+        store.updateUserBalance("XTZ", res.xtzBalance);
         store.updateUserBalance("tzBTC", res.tzbtcBalance);
         store.updateUserBalance("SIRS", res.sirsBalance);
       } else {
+        store.updateUserBalance("XTZ", null);
         store.updateUserBalance("tzBTC", null);
         store.updateUserBalance("SIRS", null);
       }

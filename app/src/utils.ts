@@ -1,4 +1,5 @@
 import BigNumber from "bignumber.js";
+import type { TezosToolkit } from "@taquito/taquito";
 import type { token } from "./types";
 import type { TezosAccountAddress } from "./store";
 import { tzbtcAddress, sirsAddress } from "./config";
@@ -67,9 +68,17 @@ export const fetchExchangeRates = async (): Promise<{
 };
 
 export const fetchBalances = async (
+  Tezos: TezosToolkit,
   userAddress: TezosAccountAddress
-): Promise<{ tzbtcBalance: number; sirsBalance: number } | null> => {
+): Promise<{
+  xtzBalance: number;
+  tzbtcBalance: number;
+  sirsBalance: number;
+} | null> => {
   try {
+    const xtzBalance = await Tezos.tz.getBalance(userAddress);
+    if (!xtzBalance) throw "Unable to fetch XTZ balance";
+
     const res = await fetch(
       `https://api.tzkt.io/v1/tokens/balances?account=${userAddress}&token.contract.in=${tzbtcAddress},${sirsAddress}`
     );
@@ -79,7 +88,11 @@ export const fetchBalances = async (
         const tzbtcBalance = +data[0].balance;
         const sirsBalance = +data[1].balance;
         if (!isNaN(tzbtcBalance) && !isNaN(sirsBalance)) {
-          return { tzbtcBalance, sirsBalance };
+          return {
+            xtzBalance: xtzBalance.toNumber(),
+            tzbtcBalance,
+            sirsBalance
+          };
         } else {
           return null;
         }

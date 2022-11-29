@@ -42,11 +42,17 @@
     $store.Tezos.setWalletProvider($store.wallet);
     // finds account info
     await getWalletInfo($store.wallet);
-    // fetches user's XTZ balance
-    const balance = await $store.Tezos.tz.getBalance(userAddress);
-    store.updateUserBalance("XTZ", balance ? balance.toNumber() : undefined);
-    // fetches user's tzBTC and SIRS balances
-    await fetchBalances(userAddress);
+    // fetches user's XTZ, tzBTC and SIRS balances
+    const res = await fetchBalances($store.Tezos, userAddress);
+    if (res) {
+      store.updateUserBalance("XTZ", res.xtzBalance);
+      store.updateUserBalance("tzBTC", res.tzbtcBalance);
+      store.updateUserBalance("SIRS", res.sirsBalance);
+    } else {
+      store.updateUserBalance("XTZ", null);
+      store.updateUserBalance("tzBTC", null);
+      store.updateUserBalance("SIRS", null);
+    }
   };
 
   const disconnectWallet = async () => {
@@ -68,16 +74,15 @@
       const userAddress = (await wallet.getPKH()) as TezosAccountAddress;
       store.updateUserAddress(userAddress);
       $store.Tezos.setWalletProvider(wallet);
-      // fetches user's balance
-      const balance = await $store.Tezos.tz.getBalance(userAddress);
-      store.updateUserBalance("XTZ", balance ? balance.toNumber() : undefined);
-      // fetches token balances
       await getWalletInfo(wallet);
-      const res = await fetchBalances(userAddress);
+      // fetches user's XTZ, tzBTC and SIRS balances
+      const res = await fetchBalances($store.Tezos, userAddress);
       if (res) {
+        store.updateUserBalance("XTZ", res.xtzBalance);
         store.updateUserBalance("tzBTC", res.tzbtcBalance);
         store.updateUserBalance("SIRS", res.sirsBalance);
       } else {
+        store.updateUserBalance("XTZ", null);
         store.updateUserBalance("tzBTC", null);
         store.updateUserBalance("SIRS", null);
       }

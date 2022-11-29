@@ -125,20 +125,14 @@
         inputTzbtc = "";
         sirsOutput = 0;
 
-        //NOTE: refactor xtz balance fetching into fetchBalances
-        // fetches new XTZ balance
-        const xtzBalance = await $store.Tezos.tz.getBalance($store.userAddress);
-        if (xtzBalance) {
-          store.updateUserBalance("XTZ", xtzBalance.toNumber());
-        } else {
-          store.updateUserBalance("XTZ", null);
-        }
-        // fetches new tzBTC and SIRS balances
-        const res = await fetchBalances($store.userAddress);
+        // fetches user's XTZ, tzBTC and SIRS balances
+        const res = await fetchBalances($store.Tezos, $store.userAddress);
         if (res) {
+          store.updateUserBalance("XTZ", res.xtzBalance);
           store.updateUserBalance("tzBTC", res.tzbtcBalance);
           store.updateUserBalance("SIRS", res.sirsBalance);
         } else {
+          store.updateUserBalance("XTZ", null);
           store.updateUserBalance("tzBTC", null);
           store.updateUserBalance("SIRS", null);
         }
