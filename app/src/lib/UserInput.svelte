@@ -3,6 +3,7 @@
   import type { token } from "../types";
   import store from "../store";
   import { displayTokenAmount } from "../utils";
+  import { XTZ, tzBTC } from "../config";
 
   let currentToken: token;
   const dispatch = createEventDispatcher();
@@ -13,6 +14,26 @@
     token: token,
     disabled: boolean,
     reset: boolean;
+
+  const addMax = () => {
+    if (
+      $store.userBalances[currentToken] &&
+      $store.userBalances[currentToken] > 0
+    ) {
+      let value = (() => {
+        if (currentToken === "XTZ") {
+          return $store.userBalances[currentToken] / 10 ** XTZ.decimals;
+        } else if (currentToken === "tzBTC") {
+          return $store.userBalances[currentToken] / 10 ** tzBTC.decimals;
+        } else if (currentToken === "SIRS") {
+          return $store.userBalances[currentToken];
+        } else {
+          return 0;
+        }
+      })();
+      inputAmount({ target: { value } });
+    }
+  };
 
   const calculateInsufficientBalance = (val: number) => {
     if ($store.userAddress) {
@@ -87,7 +108,7 @@
         <img src={`images/${token}.png`} alt={token} />
       {/if}
     </div>
-    <button class="input-with-logo__max transparent">
+    <button class="input-with-logo__max transparent" on:click={addMax}>
       {#if $store.userAddress}
         Max: {$store.userBalances[currentToken]
           ? displayTokenAmount($store.userBalances[currentToken], currentToken)
