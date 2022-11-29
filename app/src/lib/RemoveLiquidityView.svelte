@@ -25,10 +25,12 @@
       if (outputRes) {
         const { xtzOut, tzbtcOut } = outputRes;
         xtzOutput = xtzOut
+          .decimalPlaces(0, 1)
           .dividedBy(10 ** 6)
           .decimalPlaces(6)
           .toNumber();
         tzbtcOutput = tzbtcOut
+          .decimalPlaces(0, 1)
           .dividedBy(10 ** 8)
           .decimalPlaces(8)
           .toNumber();
@@ -57,8 +59,8 @@
           .removeLiquidity({
             to: $store.userAddress,
             lqtBurned: inputSirs,
-            minXtzWithdrawn: Math.floor(xtzOutput * 10 ** XTZ.decimals),
-            minTokensWithdrawn: Math.floor(tzbtcOutput * 10 ** tzBTC.decimals),
+            minXtzWithdrawn: Math.floor(xtzOutput * 10 ** XTZ.decimals), //Math.floor(3.859644 * 10 ** XTZ.decimals),
+            minTokensWithdrawn: Math.floor(tzbtcOutput * 10 ** tzBTC.decimals), //Math.floor(0.00023012 * 10 ** tzBTC.decimals),
             deadline: calcDeadline()
           })
           .send();

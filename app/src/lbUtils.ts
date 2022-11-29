@@ -189,6 +189,7 @@ export const removeLiquidityXtzTzbtcOut = (p: {
   const { liquidityBurned, totalLiquidity, xtzPool: _xtzPool, tokenPool } = p;
 
   let xtzPool = creditSubsidy(_xtzPool);
+  // let xtzPool = _xtzPool;
   let liquidityBurned_ = new BigNumber(0);
   let totalLiquidity_ = new BigNumber(0);
   let xtzPool_ = new BigNumber(0);

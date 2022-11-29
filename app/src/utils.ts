@@ -106,4 +106,5 @@ export const fetchBalances = async (
   }
 };
 
-export const calcDeadline = () => new Date(Date.now() + 60000).toISOString();
+export const calcDeadline = () =>
+  new Date(Date.now() + 3_600_000).toISOString();
