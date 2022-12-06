@@ -9,11 +9,6 @@
 
 <style lang="scss">
   .interface-container {
-    // display: flex;
-    // flex-direction: column;
-    // justify-content: space-between;
-    // align-items: center;
-    // position: relative;
     display: grid;
     grid-template-rows: 20% 60% 20%;
     justify-items: center;

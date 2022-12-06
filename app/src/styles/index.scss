@@ -188,6 +188,12 @@ h1 {
   background-color: $powder-blue;
 }
 
+@media screen and (max-height: 700px) {
+  .container {
+    padding: 15px;
+  }
+}
+
 .spinner {
   display: inline-block;
   position: relative;

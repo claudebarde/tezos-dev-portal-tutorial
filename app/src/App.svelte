@@ -43,7 +43,14 @@
     grid-template-columns: 250px 1fr;
     gap: $padding;
     padding: $padding;
-    height: calc(100% - (#{$padding} * 3));
+    height: calc(100% - (#{$padding} * 2));
+  }
+
+  @media screen and (max-height: 700px) {
+    main {
+      padding: 0px;
+      height: 100%;
+    }
   }
 </style>
 

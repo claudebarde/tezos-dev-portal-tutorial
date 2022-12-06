@@ -17,12 +17,22 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      align-items: stretch;
+      align-items: center;
       gap: 10px;
+
+      button {
+        width: 80%;
+      }
     }
 
     .sidebar__footer {
       text-align: center;
+    }
+  }
+
+  @media screen and (max-height: 700px) {
+    .sidebar {
+      height: calc(100% - (20px * 2));
     }
   }
 </style>
