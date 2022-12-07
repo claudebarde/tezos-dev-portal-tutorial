@@ -8,7 +8,11 @@
 	- Checking that everything works
 
 ## - Setting up the dapp
+	- File structure
+	- Configuration
 	- The `TezosToolkit` instance
+
+## -Setting up the wallet
 	- Setting up Beacon
 	- Design considerations (wallet, etc.)
 
