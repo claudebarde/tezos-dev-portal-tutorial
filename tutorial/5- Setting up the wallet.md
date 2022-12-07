@@ -79,3 +79,45 @@ const connectWallet = async () => {
     }
   };
 ```
+
+The connection will be handled in a specific function called `connectWallet`.
+If the store doesn't hold an instance of the `BeaconWallet` (if the dapp didn't detect any live connection on mount), we create that instance and we save it in the store.
+
+Next, we ask the user to select a wallet with the `requestPermissions()` method present on the instance of the `BeaconWallet`. The parameter is an object where we indicate the network we want to connect to as well as the URL of the Tezos RPC node we will interact with.
+
+After the user selects a wallet to use with our dapp, we get their address with the `getPKH()` method on the `BeaconWallet` instance, we update the signer in the `TezosToolkit` instance by passing the wallet instance to `setWalletProvider()`, we get the information we need from the wallet and we fetch the user's balances.
+
+Now, the wallet is connected and the user is shown their different balances, as well as a connection status in the sidebar!
+
+> IMPORTANT: however you want to design your dapp, it is essential to keep one single instance of the `BeaconWallet` and it is highly recommended to do the same with the instance of the `TezosToolkit`. Creating multiple instances messes with the state of your app and with Taquito in general.
+
+### Disconnecting the wallet
+
+Disconnecting the wallet is as important as connecting it. There is nothing more frustrating than looking for how to disconnect your wallet for hours when it is not made explicit. Remember, a lot of users have multiple wallets (like Temple or Kukai) and even multiple addresses within the same wallet that they want to use to interact with your dapp. Make disconnecting the wallet easy for them.
+
+```typescript=
+const disconnectWallet = async () => {
+    $store.wallet.client.clearActiveAccount();
+    store.updateWallet(undefined);
+    store.updateUserAddress(undefined);
+    connectedNetwork = "";
+    walletIcon = "";
+  };
+```
+
+There are different steps to disconnect the wallet and reset the state of the dapp:
+- `$store.wallet.client.clearActiveAccount()` -> kills the current connection to Beacon
+- `store.updateWallet(undefined)` -> removes the wallet from the state in order to trigger a reload of the interface
+- `store.updateUserAddress(undefined)` -> removes the current user's address from the state to update the UI
+- `connectedNetwork = ""; waleltIcon = ""` -> also needed to reset the state of the dapp and present an interface where no wallet is connected
+
+The call to `clearActiveAccount()` on the wallet instance is the only thing that you will do in whatever dapp you are building, it will remove all the data in the local storage and when your user will revisit your dapp, they won't be automatically connected with their wallet.
+
+### Design considerations
+
+Writing code to interact with a wallet in a decentralized application is a very new paradigm and although you will be able to reuse a lot of concepts and good practices from your experience as a developer, there are also a few new things to keep in mind:
+
+1. Never prompt the users to connect their wallet after the dapp is mounted: getting a wallet popup on your screen just after the app is loaded is annoying, you have to remember that a lot of your users are non-technical and don't understand that connecting a wallet is harmless, so they may be wary about your dapp if you ask them to connect their wallet from the get go. Instead, present some information about your dapp and a button to connect their wallet.
+2. The button to connect a wallet must stand out in your interface, whether you make it bigger, with a different color or a different font, the users must not spend more than a couple of seconds to find it.
+3. The button must be in a predictable position: most dapps on Tezos place their button to connect a wallet at the top-left or top-right of the UI. You are not *"creative"* by placing the button in some other location, you will just end up confusing your users.
+4. The text in the button should read **Connect** or something similar, avoid **Sync** or other words but "connect" as they can mean something different in the context of a decentralized application.
