@@ -41,3 +41,4 @@ As the decentralized application is ultimately a web app, we will use the follow
 - Vite => https://vitejs.dev/
 - Taquito => https://tezostaquito.io/
 - Beacon => https://docs.walletbeacon.io/
+- GitHub repo with the dapp => https://github.com/claudebarde/tezos-dev-portal-tutorial
