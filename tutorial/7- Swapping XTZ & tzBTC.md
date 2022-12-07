@@ -180,6 +180,45 @@ enum TxStatus {
 
 swapStatus = TxStatus.Loading;
 store.updateToast(true, "Waiting to confirm the swap...");
+
+const lbContract = await $store.Tezos.wallet.at(dexAddress);
+const deadline = calcDeadline();
 ```
 
 We create an [`enum`](https://www.typescriptlang.org/docs/handbook/enums.html) to represent the status of the transaction (available in the `type.ts` file) and we update the `swapStatus` variable responsible for updating the UI and blocking the inputs. The store is also updated with the `updateToast()` method in order to get a simple toast show up in the interface.
+
+After that, we create the `ContractAbstraction` from Taquito in order to interact with the DEX and we also calculate the deadline.
+
+>*Note: the Liquidity Baking contract expects you to pass a deadline for the swap, the transaction will be rejected if the deadline is not valid.*
+
+Now, we have 2 situations: the user selected either XTZ or tzBTC as the token to swap. Let's start with tzBTC as the preparation of the transaction is more complicated:
+
+```typescript=
+if (tokenFrom === "tzBTC") {
+	const tzBtcContract = await $store.Tezos.wallet.at(tzbtcAddress);
+	const tokensSold = Math.floor(+inputFrom * 10 ** tzBTC.decimals);
+	let batch = $store.Tezos.wallet
+	  .batch()
+	  .withContractCall(tzBtcContract.methods.approve(dexAddress, 0))
+	  .withContractCall(
+		tzBtcContract.methods.approve(dexAddress, tokensSold)
+	  )
+	  .withContractCall(
+		lbContract.methods.tokenToXtz(
+		  $store.userAddress,
+		  tokensSold,
+		  minimumOutput,
+		  deadline
+		)
+	  )
+	  .withContractCall(tzBtcContract.methods.approve(dexAddress, 0));
+	const batchOp = await batch.send();
+	await batchOp.confirmation();
+  }
+```
+
+The major difference between swapping XTZ to tzBTC and swapping tzBTC to XTZ is that the latter requires 3 additional operations: one to set the current permission for the LB DEX (if any) to zero, one to register the LB DEX as an operator within the tzBTC contract with the amount of tokens that it is allowed to spend on behalf of the user and one to set this amount back to zero and avoid later uses of the given permission.
+
+>*Note: you can read more about the behaviours of the tzBTC contract and other FA1.2 contracts [here](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-7/tzip-7.md)*.
+
+First, we create the `ContractAbstraction` for the tzBTC contract as we are about to interact with it. Once done, we calculate the amount of tokens we should approve based on our previous calculations.
