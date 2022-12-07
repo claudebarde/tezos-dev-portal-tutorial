@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { OpKind } from "@taquito/taquito";
   import UserInput from "./UserInput.svelte";
   import { type token, TxStatus } from "../types";
   import {
