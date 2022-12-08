@@ -219,6 +219,16 @@ if (tokenFrom === "tzBTC") {
 
 The major difference between swapping XTZ to tzBTC and swapping tzBTC to XTZ is that the latter requires 3 additional operations: one to set the current permission for the LB DEX (if any) to zero, one to register the LB DEX as an operator within the tzBTC contract with the amount of tokens that it is allowed to spend on behalf of the user and one to set this amount back to zero and avoid later uses of the given permission.
 
->*Note: you can read more about the behaviours of the tzBTC contract and other FA1.2 contracts [here](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-7/tzip-7.md)*.
+>*Note 1: you can read more about the behaviours of the tzBTC contract and other FA1.2 contracts [here](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-7/tzip-7.md)*.
+
+> *Note 2: technically speaking, it is not necessary to set the permission back to zero at the end of the transaction (but setting it to zero at the beginning is required). It's just a common practice to prevent any unnoticed pending permission.*
 
 First, we create the `ContractAbstraction` for the tzBTC contract as we are about to interact with it. Once done, we calculate the amount of tokens we should approve based on our previous calculations.
+
+After that, we use the [Batch API](https://tezostaquito.io/docs/batch_api/) provided by Taquito. The Batch API allows to group multiple operations together in a single transaction, in order to save on gas and on processing time. This is how it works:
+1. You call the `batch()` method present on the `wallet` or `contract` property of the instance of the `TezosToolkit`
+2. This returns a batch instance with different methods that you can use to create transactions, in our example, `withContractCall()` is a method that will add a new contract call to the batch of operations
+3. As a parameter for `withContractCall()`, you pass the contract call as if you would call it on its own, by using the name of the entrypoint on the `methods` property of the `ContractAbstraction`
+4. In this case, we batch 1 operation to set the permission of the LB DEX within the tzBTC contract to zero, 1 operation to approve the amount required by the swap, 1 operation to confirm the swap within the LB DEX contract and 1 operation to set the permission of the LB DEX back to zero
+5. On the returned batch, you call the `.send()` method to forge the transaction, sign it and send it to the Tezos mempool, which returns an operation
+6. You can `await` the confirmation of the transaction by calling `.confirmation()` on the operation returned in the step above.
