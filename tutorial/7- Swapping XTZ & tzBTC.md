@@ -1,5 +1,7 @@
 Now, let's go down the rabbit hole and implement the most complex feature of the dapp: the swap of XTZ and tzBTC.
 
+### Designing the UI
+
 I say "the most complex" because the interface we are about to build includes a lot of moving parts and calculations that must be done at the moment of the user's input and confirmation. The Liquidity Baking contract is also a bit picky about the data you must send in order to swap tokens, so we will have to fine tune our code to make sure that it goes like clockwork!
 
 Here is a screenshot of the UI we are aiming for:
@@ -9,6 +11,8 @@ Here is a screenshot of the UI we are aiming for:
 There are 2 text inputs, the one on the left is editable and will let the user input the amount of XTZ or tzBTC they want to exchange and the one on the right will displaying the corresponding amount they'll get in the other token. The button in the middle with the 2 arrows will allow the user to switch the input between XTZ and tzBTC.
 
 Going into the details of how the text inputs are implemented would go beyond the scope of this tutorial, but you can have a look at it in the `UserInput.svelte` file.
+
+### Handling user input 
 
 In a nutshell, each input with its token icon and `max` field is the same component, the parent component tracks the position of each to update their UI accordingly. Internally, each input component keeps track of the user's input and the available balance to display error messages if the balance is too low. Each update in the input is dispatched to the parent component to adjust the general UI.
 
@@ -68,6 +72,8 @@ Here, a lot of things happen:
 - the minimum amount to be expected according to the slippage set by the user is calculated by the `calcSlippage` function
 
 >*Note: the "slippage" refers to the percentage that the user accepts to lose during the trade, a loss of tokens can happen according to the state of the liquidity pools. For example, if 100 tokens A can be swapped for 100 tokens B with a slippage of 1%, it means that you will receive between 99 and 100 tokens B.*
+
+### Converting XTZ to tzBTC and tzBTC to XTZ
 
 Now, let's have a look at the functions we introduced above, `xtzToTokenTokenOutput` and `tokenToXtzXtzOutput`. They were adapted [from the code in this repo](https://github.com/kukai-wallet/kukai-dex-calculations) and allows you to calculate how many tzBTC a user will get according to the XTZ amount they input and vice-versa.
 
@@ -147,6 +153,8 @@ export const tokenToXtzXtzOutput = (p: {
 
 After the corresponding amount of XTZ or tzBTC is calculated according to the inputs of the user, the UI unlocks and is ready for a swap.
 
+### Creating a swap transaction
+
 Swapping the tokens is pretty intensive as they are multiple moving parts that must play in unison. Let's describe step by step what happens after the user clicks on the *Swap* button:
 
 ```typescript=
@@ -191,6 +199,8 @@ After that, we create the `ContractAbstraction` from Taquito in order to interac
 
 >*Note: the Liquidity Baking contract expects you to pass a deadline for the swap, the transaction will be rejected if the deadline is not valid.*
 
+#### Swapping tzBTC for XTZ
+
 Now, we have 2 situations: the user selected either XTZ or tzBTC as the token to swap. Let's start with tzBTC as the preparation of the transaction is more complicated:
 
 ```typescript=
@@ -232,3 +242,84 @@ After that, we use the [Batch API](https://tezostaquito.io/docs/batch_api/) prov
 4. In this case, we batch 1 operation to set the permission of the LB DEX within the tzBTC contract to zero, 1 operation to approve the amount required by the swap, 1 operation to confirm the swap within the LB DEX contract and 1 operation to set the permission of the LB DEX back to zero
 5. On the returned batch, you call the `.send()` method to forge the transaction, sign it and send it to the Tezos mempool, which returns an operation
 6. You can `await` the confirmation of the transaction by calling `.confirmation()` on the operation returned in the step above.
+
+Notice the penultimate transaction: the `tokenToXtz` entrypoint of the LB contract requires 4 parameters:
+- The address of the account that will receive the XTZ
+- The amount of tzBTC that will be sold for the swap
+- The expected amount of XTZ that will be received
+- A deadline after which the transaction becomes invalid
+
+After the transaction is sent by calling the `.send()` method, we call `.confirmation()` on the operation object to wait for one confirmation (which is the default if you don't pass a parameter to the method).
+
+#### Swapping XTZ to tzBTC
+
+This will be a much easier endeavour! Let's check the code first:
+
+```typescript=
+const op = await lbContract.methods
+  .xtzToToken($store.userAddress, minimumOutput, deadline)
+  .send({ amount: +inputFrom });
+await op.confirmation();
+```
+
+The `xtzToToken` entrypoint takes 3 parameters:
+- The address of the account that will receive the tzBTC tokens
+- The expected amount of tzBTC to be received
+- The deadline
+
+In addition to that, you have to attach the right amount of XTZ to the transaction. This can be achieved very easily with Taquito.
+Remember the `.send()` method that you call on the output of the entrypoint call? If you didn't know, you can pass parameters to this method, one of the most important ones is an amount of XTZ to send along with the transaction. Just pass an object with an `amount` property and a value of the amount of tez you want to attach, and that's it!
+
+Then, just like any other transaction, we get an operation object and call `.confirmation()` on it to wait for the operation to be included in a new block.
+
+### Updating the UI
+
+Whether the swap is successful or not, it is crucial to provide feedback to your users.
+
+If the swap succeeded, we will fetch the user's new balances and provide a visual feedback:
+
+```typescript=
+const res = await fetchBalances($store.Tezos, $store.userAddress);
+if (res) {
+store.updateUserBalance("XTZ", res.xtzBalance);
+store.updateUserBalance("tzBTC", res.tzbtcBalance);
+store.updateUserBalance("SIRS", res.sirsBalance);
+} else {
+store.updateUserBalance("XTZ", null);
+store.updateUserBalance("tzBTC", null);
+store.updateUserBalance("SIRS", null);
+}
+
+// visual feedback
+store.updateToast(true, "Swap successful!");
+```
+
+>*Note: it would also be possible to avoid 2 HTTP requests and calculate the new balances from the amounts that were passed as parameters for the swap. However, the users may have received tokens from the last time the balances were fetched, and it will provide a better user experience if you get the accurate balances after the swap.*
+
+If the swap wasn't successful, we will be redirected into the `catch` branch where we also have to provide visual feedback and update the UI:
+
+```typescript=
+swapStatus = TxStatus.Error;
+store.updateToast(true, "An error has occurred");
+```
+
+Setting `swapStatus` to `TxStatus.Error` will remove the loading interface we set during the swap before we display a toast to indicate that the transaction failed.
+
+Finally (pun intended), we move to the `finally` branch to reset the UI after 3 seconds:
+
+```typescript=
+finally {
+  setTimeout(() => {
+	swapStatus = TxStatus.NoTransaction;
+	store.showToast(false);
+  }, 3000);
+}
+```
+
+### Design considerations
+
+As you can tell from the code involved, swapping tokens is a pretty complex action and there are a few things that you should keep in mind, regarding both the code you write and the UI you create:
+- Try to structure your code into different steps that don't mix, for example, step 1: updating the UI before forging the transaction, step 2: forging the transaction, step 3: emitting the transaction and updating the UI, etc.
+- Never forget to provide visual feedback to your users! Baking a new operation can take up to 30 seconds when the network is not congested, and even longer if there is a lot of traffic. The users will wonder what is happening if you don't make them wait. A spinner or a loading animation is generally a good idea to indicate that the app is waiting for some sort of confirmation.
+- Disable the UI while the transaction is in the mempool! You don't want the users to click on the *Swap* button a second time (or third, or fourth!) while the blockchain is processing the transaction they already created. In addition of costing them more money, it can also confuse them and create unexpected behaviours in your UI.
+- Reset the UI at the end. Nobody wants to click on the *Refresh* button after an interaction with the blockchain because the UI seems to be stuck in its previous state. Make sure the interface is in the same (or similar) state as it was when the user first opened it.
