@@ -62,7 +62,7 @@
     const { token, val, insufficientBalance: insufBlnc } = ev.detail;
     insufficientBalance = insufBlnc;
 
-    if (token === tokenFrom && val > 0) {
+    if (token === tokenFrom && val !== null && val > 0 && isFinite(val)) {
       inputFrom = val.toString();
       inputTo = "";
       if (tokenFrom === "XTZ") {
@@ -77,7 +77,12 @@
         }
         // calculates minimum output
         minimumOutput = calcSlippageValue("tzBTC", +inputTo, +slippage);
-      } else if (tokenFrom === "tzBTC") {
+      } else if (
+        tokenFrom === "tzBTC" &&
+        val !== null &&
+        val > 0 &&
+        isFinite(val)
+      ) {
         // calculates XTZ amount
         let xtzAmount = tokenToXtzXtzOutput({
           tokenIn: val * 10 ** tzBTC.decimals,
@@ -91,6 +96,7 @@
         minimumOutput = calcSlippageValue("XTZ", +inputTo, +slippage);
       }
     } else {
+      insufficientBalance = true;
       inputFrom = "";
       inputTo = "";
     }

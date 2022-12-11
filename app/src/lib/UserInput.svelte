@@ -63,7 +63,7 @@
   const inputAmount = ev => {
     const val = +ev.target.value;
     // validates numeric input
-    if (!isNaN(val)) {
+    if (!isNaN(+val)) {
       // checks if user has enough balance
       calculateInsufficientBalance(val);
       dispatch("new-input", { token, val, insufficientBalance });
@@ -102,6 +102,7 @@
         type="text"
         value={inputVal}
         on:input={inputAmount}
+        maxlength="8"
         {disabled}
       />
       {#if logoPos === "right"}

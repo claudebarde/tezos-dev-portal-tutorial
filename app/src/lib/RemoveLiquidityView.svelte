@@ -14,7 +14,8 @@
 
   const saveInput = ev => {
     const { token, val } = ev.detail;
-    if (token === "SIRS" && val > 0) {
+    console.log(val);
+    if (token === "SIRS" && val > 0 && isFinite(val)) {
       inputSirs = val.toString();
       const outputRes = removeLiquidityXtzTzbtcOut({
         liquidityBurned: val,
