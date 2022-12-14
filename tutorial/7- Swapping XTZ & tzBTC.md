@@ -2,13 +2,13 @@ Now, let's go down the rabbit hole and implement the most complex feature of the
 
 ### Designing the UI
 
-I say "the most complex" because the interface we are about to build includes a lot of moving parts and calculations that must be done at the moment of the user's input and confirmation. The Liquidity Baking contract is also a bit picky about the data you must send in order to swap tokens, so we will have to fine tune our code to make sure that it goes like clockwork!
+I say "the most complex" because the interface we are about to build includes a lot of moving parts and calculations that must be done at the moment of the user's input and confirmation. The Liquidity Baking contract is also a bit picky about the data you must send in order to swap tokens, so we will have to fine-tune our code to make sure that it goes like clockwork!
 
 Here is a screenshot of the UI we are aiming for:
 
 ![Swap UI](/images/swap-ui.png "Swap UI")
 
-There are 2 text inputs, the one on the left is editable and will let the user input the amount of XTZ or tzBTC they want to exchange and the one on the right will displaying the corresponding amount they'll get in the other token. The button in the middle with the 2 arrows will allow the user to switch the input between XTZ and tzBTC.
+There are 2 text inputs, the one on the left is editable and will let the user input the amount of XTZ or tzBTC they want to exchange and the one on the right will display the corresponding amount they'll get in the other token. The button in the middle with the 2 arrows will allow the user to switch the input between XTZ and tzBTC.
 
 Going into the details of how the text inputs are implemented would go beyond the scope of this tutorial, but you can have a look at it in the `UserInput.svelte` file.
 
@@ -75,7 +75,7 @@ Here, a lot of things happen:
 
 ### Converting XTZ to tzBTC and tzBTC to XTZ
 
-Now, let's have a look at the functions we introduced above, `xtzToTokenTokenOutput` and `tokenToXtzXtzOutput`. They were adapted [from the code in this repo](https://github.com/kukai-wallet/kukai-dex-calculations) and allows you to calculate how many tzBTC a user will get according to the XTZ amount they input and vice-versa.
+Now, let's have a look at the functions we introduced above, `xtzToTokenTokenOutput` and `tokenToXtzXtzOutput`. They were adapted [from the code in this repo](https://github.com/kukai-wallet/kukai-dex-calculations) and allow you to calculate how many tzBTC a user will get according to the XTZ amount they input and vice-versa.
 
 ```typescript=
 export const xtzToTokenTokenOutput = (p: {
@@ -174,9 +174,9 @@ const swap = async () => {
 };
 ```
 
-The `swap` function is triggered when the user clicks the *Swap* button. The first thing to do is to check if there is a valid value for `inputFrom`, i.e. the token that the user wants to exchange (XTZ or tzBTC) and a valid value for `inputTo`, i.e. the token that the user will receive. There is no point in going further if those two values are not set properly.
+The `swap` function is triggered when the user clicks the *Swap* button. The first thing to do is to check if there is a valid value for `inputFrom`, i.e. the token that the user wants to exchange (XTZ or tzBTC), and a valid value for `inputTo`, i.e. the token that the user will receive. There is no point in going further if those two values are not set properly.
 
-Next, we update the UI in order to show to the user that the transaction is getting ready:
+Next, we update the UI in order to show the user that the transaction is getting ready:
 
 ```typescript=
 enum TxStatus {
@@ -193,7 +193,7 @@ const lbContract = await $store.Tezos.wallet.at(dexAddress);
 const deadline = calcDeadline();
 ```
 
-We create an [`enum`](https://www.typescriptlang.org/docs/handbook/enums.html) to represent the status of the transaction (available in the `type.ts` file) and we update the `swapStatus` variable responsible for updating the UI and blocking the inputs. The store is also updated with the `updateToast()` method in order to get a simple toast show up in the interface.
+We create an [`enum`](https://www.typescriptlang.org/docs/handbook/enums.html) to represent the status of the transaction (available in the `type.ts` file) and we update the `swapStatus` variable responsible for updating the UI and blocking the inputs. The store is also updated with the `updateToast()` method to get a simple toast to show up in the interface.
 
 After that, we create the `ContractAbstraction` from Taquito in order to interact with the DEX and we also calculate the deadline.
 
@@ -229,17 +229,17 @@ if (tokenFrom === "tzBTC") {
 
 The major difference between swapping XTZ to tzBTC and swapping tzBTC to XTZ is that the latter requires 3 additional operations: one to set the current permission for the LB DEX (if any) to zero, one to register the LB DEX as an operator within the tzBTC contract with the amount of tokens that it is allowed to spend on behalf of the user and one to set this amount back to zero and avoid later uses of the given permission.
 
->*Note 1: you can read more about the behaviours of the tzBTC contract and other FA1.2 contracts [here](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-7/tzip-7.md)*.
+>*Note 1: you can read more about the behaviors of the tzBTC contract and other FA1.2 contracts [here](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-7/tzip-7.md)*.
 
 > *Note 2: technically speaking, it is not necessary to set the permission back to zero at the end of the transaction (but setting it to zero at the beginning is required). It's just a common practice to prevent any unnoticed pending permission.*
 
 First, we create the `ContractAbstraction` for the tzBTC contract as we are about to interact with it. Once done, we calculate the amount of tokens we should approve based on our previous calculations.
 
-After that, we use the [Batch API](https://tezostaquito.io/docs/batch_api/) provided by Taquito. The Batch API allows to group multiple operations together in a single transaction, in order to save on gas and on processing time. This is how it works:
+After that, we use the [Batch API](https://tezostaquito.io/docs/batch_api/) provided by Taquito. The Batch API allows grouping multiple operations together in a single transaction, in order to save on gas and on processing time. This is how it works:
 1. You call the `batch()` method present on the `wallet` or `contract` property of the instance of the `TezosToolkit`
 2. This returns a batch instance with different methods that you can use to create transactions, in our example, `withContractCall()` is a method that will add a new contract call to the batch of operations
 3. As a parameter for `withContractCall()`, you pass the contract call as if you would call it on its own, by using the name of the entrypoint on the `methods` property of the `ContractAbstraction`
-4. In this case, we batch 1 operation to set the permission of the LB DEX within the tzBTC contract to zero, 1 operation to approve the amount required by the swap, 1 operation to confirm the swap within the LB DEX contract and 1 operation to set the permission of the LB DEX back to zero
+4. In this case, we batch 1 operation to set the permission of the LB DEX within the tzBTC contract to zero, 1 operation to approve the amount required by the swap, 1 operation to confirm the swap within the LB DEX contract, and 1 operation to set the permission of the LB DEX back to zero
 5. On the returned batch, you call the `.send()` method to forge the transaction, sign it and send it to the Tezos mempool, which returns an operation
 6. You can `await` the confirmation of the transaction by calling `.confirmation()` on the operation returned in the step above.
 
@@ -253,7 +253,7 @@ After the transaction is sent by calling the `.send()` method, we call `.confirm
 
 #### Swapping XTZ to tzBTC
 
-This will be a much easier endeavour! Let's check the code first:
+This will be a much easier endeavor! Let's check the code first:
 
 ```typescript=
 const op = await lbContract.methods
@@ -276,7 +276,7 @@ Then, just like any other transaction, we get an operation object and call `.con
 
 Whether the swap is successful or not, it is crucial to provide feedback to your users.
 
-If the swap succeeded, we will fetch the user's new balances and provide a visual feedback:
+If the swap succeeded, we will fetch the user's new balances and provide visual feedback:
 
 ```typescript=
 const res = await fetchBalances($store.Tezos, $store.userAddress);
@@ -296,7 +296,7 @@ store.updateToast(true, "Swap successful!");
 
 >*Note: it would also be possible to avoid 2 HTTP requests and calculate the new balances from the amounts that were passed as parameters for the swap. However, the users may have received tokens from the last time the balances were fetched, and it will provide a better user experience if you get the accurate balances after the swap.*
 
-If the swap wasn't successful, we will be redirected into the `catch` branch where we also have to provide visual feedback and update the UI:
+If the swap wasn't successful, we will be redirected to the `catch` branch where we also have to provide visual feedback and update the UI:
 
 ```typescript=
 swapStatus = TxStatus.Error;
@@ -321,5 +321,5 @@ finally {
 As you can tell from the code involved, swapping tokens is a pretty complex action and there are a few things that you should keep in mind, regarding both the code you write and the UI you create:
 - Try to structure your code into different steps that don't mix, for example, step 1: updating the UI before forging the transaction, step 2: forging the transaction, step 3: emitting the transaction and updating the UI, etc.
 - Never forget to provide visual feedback to your users! Baking a new operation can take up to 30 seconds when the network is not congested, and even longer if there is a lot of traffic. The users will wonder what is happening if you don't make them wait. A spinner or a loading animation is generally a good idea to indicate that the app is waiting for some sort of confirmation.
-- Disable the UI while the transaction is in the mempool! You don't want the users to click on the *Swap* button a second time (or third, or fourth!) while the blockchain is processing the transaction they already created. In addition of costing them more money, it can also confuse them and create unexpected behaviours in your UI.
+- Disable the UI while the transaction is in the mempool! You don't want the users to click on the *Swap* button a second time (or third, or fourth!) while the blockchain is processing the transaction they already created. In addition to costing them more money, it can also confuse them and create unexpected behaviors in your UI.
 - Reset the UI at the end. Nobody wants to click on the *Refresh* button after an interaction with the blockchain because the UI seems to be stuck in its previous state. Make sure the interface is in the same (or similar) state as it was when the user first opened it.

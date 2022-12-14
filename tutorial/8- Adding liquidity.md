@@ -2,7 +2,7 @@ This one is going to be a big one, but a little less involved than swapping toke
 
 The most complex part about adding liquidity to the Liquidity Baking contract is to get the amounts of tokens right! After that, it will be a walk in the park.
 
-First, let's understand what we are doing here: the LB DEX gives you the ability to provide a pair of tokens (only 2 choices here, XTZ and tzBTC) as liquidity to enable the swapping feature. In exchange, you get SIRS tokens to represent your investment. These tokens increase in value over time, so if you wait long enough, you can make a profit when you remove your liquidity, which will be explaining in the next chapter.
+First, let's understand what we are doing here: the LB DEX gives you the ability to provide a pair of tokens (only 2 choices here, XTZ and tzBTC) as liquidity to enable the swapping feature. In exchange, you get SIRS tokens to represent your investment. These tokens increase in value over time, so if you wait long enough, you can make a profit when you remove your liquidity, which will be explained in the next chapter.
 
 The interface here is going to look a lot like the interface for swapping, with some key differences:
 
@@ -98,7 +98,7 @@ else if (token === "tzBTC" && val && val > 0) {
 }
 ```
 
-We also need to check that the provided value is correct, after what we use the `tokenToXtzXtzOutput` function to get the corresponding amount of XTZ in order to create a valid pair and provide liquidity:
+We also need to check that the provided value is correct, after what we use the `tokenToXtzXtzOutput` function to get the corresponding amount of XTZ to create a valid pair and provide liquidity:
 
 ```typescript=
 const tokenToXtzXtzOutput = (p: {
@@ -184,7 +184,7 @@ This function takes 3 parameters:
 2. the current state of the XTZ pool
 3. the total amount of liquidity available in the contract (i.e. the SIRS tokens)
 
-It will output the amount of SIRS created after the transaction. This amount is stored into the `sirsOutput` variable to be displayed in the interface.
+It will output the amount of SIRS created after the transaction. This amount is stored in the `sirsOutput` variable to be displayed in the interface.
 
 ### Adding liquidity
 
@@ -211,13 +211,13 @@ const addLiquidity = async () => {
 }
 ```
 
-First, we check that the 3 values we need, the amounts of XTZ, tzBTC and SIRS are available. If it is the case, we update the UI by switching the `addLiquidityStatus` variable to `TxStatus.Loading` and by displaying a simple toast with a message.
+First, we check that the 3 values we need, the amounts of XTZ, tzBTC, and SIRS are available. If it is the case, we update the UI by switching the `addLiquidityStatus` variable to `TxStatus.Loading` and by displaying a simple toast with a message.
 
 After that, we convert the amount of tzBTC we got into its "real" value, i.e. the value without decimal points as stored in its contract.
 
 Then, we create the `ContractAbstraction` for the LB DEX and the `ContractAbstraction` for the tzBTC contract, as we will interact with both.
 
->*Note: remember, every time your users want to use tzBTC with the LB DEX, the amount of tokens that will be used need to be approved at the tzBTC contract level, which requires 3 different operations.*
+>*Note: remember, every time your users want to use tzBTC with the LB DEX, the amount of tokens that will be used needs to be approved at the tzBTC contract level, which requires 3 different operations.*
 
 At this point, you may have guessed that we have to create a batched transaction, but let's do it in a different way from the previous chapter, so you can choose the way you prefer:
 
@@ -255,7 +255,7 @@ const batchOp = await batch.send();
 await batchOp.confirmation();
 ```
 
-In the previous chapter, the batched transaction was created using the `withContractCall` method available on the `batch` method. Here, we will actually pass a parameter to the `batch()` method, an array containing multiple objects that represent each a operation.
+In the previous chapter, the batched transaction was created using the `withContractCall` method available on the `batch` method. Here, we will actually pass a parameter to the `batch()` method, an array containing multiple objects that each represent an operation.
 
 The first operation:
 ```typescript=
@@ -312,7 +312,7 @@ resets the allowed amount of tzBTC to be used by the LB DEX to zero.
 
 Then, just like any other transaction forged through Taquito, you call `.send()` and `.confirmation()` on the operation object to wait for one confirmation.
 
-Once the transaction is confirmed, you clear the UI before fetching the new balances of XTZ, tzBTC and SIRS.
+Once the transaction is confirmed, you clear the UI before fetching the new balances of XTZ, tzBTC, and SIRS.
 
 If the transaction failed, you update the UI and provide visual feedback to the users:
 

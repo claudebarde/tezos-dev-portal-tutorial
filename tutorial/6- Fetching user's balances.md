@@ -1,4 +1,4 @@
-One of the most important feature of the dapp that is also one that is the easiest to overlook is fetching the user's balances. Users can tell something is wrong if their balances don't show properly or don't update accordingly after an interaction with the contract, that's why it's crucial to take care of displaying and updating their balances.
+One of the most important features of the dapp which is also among the easiest ones to overlook is fetching the user's balances. Users can tell something is wrong if their balances don't show properly or don't update accordingly after an interaction with the contract, that's why it's crucial to take care of displaying and updating their balances.
 
 Because we are going to fetch balances in different components of our application, we will create a function in the `utils.ts` file and import it when necessary.
 
@@ -24,7 +24,7 @@ export const fetchBalances = async (
 }
 ```
 
-The `fetchBalances` function will take 2 parameters: an instance of the `TezosToolkit` to fetch the user's XTZ balance and the user's address to retrieve the balances that match the address. It will return an object with 3 properties: `xtzBalance` , `tzbtcBalance`, and `sirsBalance` or `null` if any error occurs.
+The `fetchBalances` function will take 2 parameters: an instance of the `TezosToolkit` to fetch the user's XTZ balance and the user's address to retrieve the balances that match the address. It will return an object with 3 properties: `xtzBalance`, `tzbtcBalance`, and `sirsBalance` or `null` if any error occurs.
 
 First, let's fetch the XTZ balance:
 
@@ -71,7 +71,7 @@ const res = await fetch(
 
 You can check [this link](https://api.tzkt.io/#operation/Tokens_GetTokenBalances) to get more details about how to fetch token balances with the TzKT API. It's a simple `fetch` with a URL that is built dynamically to include the user's address and the addresses of the contracts for tzBTC and SIRS.
 
-When the promise resolves with a `200` code, this means that the data has been received. We parse it into JSON with the `.json()` method on the response and we check that the data as the expected shape, i.e. an array with 2 elements in it.
+When the promise resolves with a `200` code, this means that the data has been received. We parse it into JSON with the `.json()` method on the response and we check that the data has the expected shape, i.e. an array with 2 elements in it.
 
 The first element is the tzBTC balance and the second one is the SIRS balance. We store them in their own variables that we cast to numbers before verifying that they were cast properly with `isNaN`. If everything goes well, the 3 balances are returned and if anything goes wrong along the way, the function returns `null`.
 
@@ -90,4 +90,4 @@ if (res) {
 }
 ```
 
-And that's it to fetch the user's balances in XTZ, tzBTC and SIRS!
+And that's it to fetch the user's balances in XTZ, tzBTC, and SIRS!

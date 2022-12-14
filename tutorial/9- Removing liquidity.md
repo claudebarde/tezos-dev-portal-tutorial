@@ -83,7 +83,7 @@ The `removeLiquidity` entrypoint expects 5 parameters:
 
 After the transaction has been emitted, we call `.confirmation()` on the operation object returned by Taquito.
 
-If the transaction was successfully, we update the UI and reset the token values to let the user know:
+If the transaction was successful, we update the UI and reset the token values to let the user know:
 
 ```typescript=
 removeLiquidityStatus = TxStatus.Success;

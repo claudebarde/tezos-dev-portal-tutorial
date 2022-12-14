@@ -37,18 +37,18 @@ The entrypoint of every Svelte app is a file called `App.svelte`, this is where 
 - vite.config.js
 ```
 
-Let's see what each of these elements do:
+Let's see what each of these elements does:
 - **assets** -> contains the favicon (this is the default Svelte favicon, but you can choose another one)
 - **lib** -> contains the different components that will make up our interface, here is what each does:
 	- `AddLiquidityView.svelte`: the interface to add liquidity to the LB DEX
 	- `Interface.svelte`: the higher-order component to hold the different views to interact with the LB DEX
 	- `RemoveLiquidity.svelte`: the interface to remove liquidity from the LB DEX
-	- `Sidebar.svelte`: the component to navigate between the different interface and to connect or disconnect the wallet
-	- `SirsStats.svelte`: the component to display the amount of XTZ, tzBTC and SIRS present in the contract
+	- `Sidebar.svelte`: the component to navigate between the different interfaces and to connect or disconnect the wallet
+	- `SirsStats.svelte`: the component to display the amount of XTZ, tzBTC, and SIRS present in the contract
 	- `SwapView.svelte`: the interface to swap XTZ and tzBTC tokens
 	- `Toast.svelte`: a simple component to display the progression of the transactions and other messages when interacting with the contract
 	- `UserInput.svelte`: a utility component to make it easier to interact and control input fields
-	- `UserStats.svelte`: the component to display the user's balance in XTZ, tzBTC and SIRS
+	- `UserStats.svelte`: the component to display the user's balance in XTZ, tzBTC, and SIRS
 	- `Wallet.svelte`: the component to manage wallet interactions
 - **styles** -> contains the SASS files to style different elements of our interface
 - **App.svelte** -> the entrypoint of the application
@@ -76,7 +76,7 @@ Svelte uses SASS by default, so there is no configuration to do for that.
 
 > *Note: I also like to target the `body` tag to inject the HTML produced by JavaScript instead of a `div` inside the `body`, but that's a personal choice and you are free to use a `div` instead*
 
-Before continuing, this is how a Svelte file looks like:
+Before continuing, this is what a Svelte file looks like:
 
 ```html=
 <script lang="ts">
@@ -90,7 +90,7 @@ Before continuing, this is how a Svelte file looks like:
 ... your HTML code
 ```
 
-Svelte components are fully contained, which means that the style that you apply inside a component doesn't leak to the other components of your app. The style that we want to share among different component will be written in the `index.scss` file.
+Svelte components are fully contained, which means that the style that you apply inside a component doesn't leak into the other components of your app. The style that we want to share among different components will be written in the `index.scss` file.
 
 There is a `script` tag with a `lang` attribute set to `ts` for TypeScript, a `style` tag with a `lang` attribute set to `scss` for SASS and the rest of the code in the file will be interpreted as HTML.
 
@@ -98,7 +98,7 @@ There is a `script` tag with a `lang` attribute set to `ts` for TypeScript, a `s
  
 Now, let's set up different things in our `App.svelte` file.
 
-The HTML part is just going to put all the higher-order component together
+The HTML part is just going to put all the higher-order components together
 ```html=
 <main>
 	<Toast />
@@ -182,10 +182,10 @@ onMount(async () => {
 
 The first thing to do is to create an instance of the `TezosToolkit` by passing the URL of the RPC node we want to interact with. In general, you want to have a single instance of the `TezosToolkit` in order to keep the same configuration across all your app components, this is why we save it in the `store` with the `updateTezos` method.
 
-After that, we want to fetch the storage of the LB DEX in order to get the amounts of XTZ, tzBTC and SIRS in the contract. We create a `ContractAbstraction`, an instance provided by Taquito with different properties and methods that are useful to work with Tezos smart contracts.
-From the `COntractAbstraction`, we can call the `storage` method that returns a JavaScript object that represents the storage of the given contract. We then pass the storage to the `updateDexInfo` method present on the `store` to update this data and display them to the user.
+After that, we want to fetch the storage of the LB DEX to get the amounts of XTZ, tzBTC, and SIRS in the contract. We create a `ContractAbstraction`, an instance provided by Taquito with different properties and methods that are useful to work with Tezos smart contracts.
+From the `ContractAbstraction`, we can call the `storage` method that returns a JavaScript object that represents the storage of the given contract. We then pass the storage to the `updateDexInfo` method present on the `store` to update this data and display them to the user.
 
-To finish, we need to fetch the exchange rates for XTZ and tzBTC in order to make conversions required by this kind of app. The `utils.ts` file contains a function that will help us here:
+To finish, we need to fetch the exchange rates for XTZ and tzBTC to make the conversions required by this kind of app. The `utils.ts` file contains a function that will help us here:
 
 ```typescript=
 export const fetchExchangeRates = async (): Promise<{

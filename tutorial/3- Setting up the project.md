@@ -2,7 +2,7 @@ As we are building a web app with the Svelte framework, the steps to set up the 
 
 In this tutorial, we will make a Svelte SPA, so we won't need SvelteKit, which will also make our life easier.
 
-First thing to do, installing Svelte with TypeScript and Vite:
+The first thing to do, installing Svelte with TypeScript and Vite:
 
 ```
 npm create vite@latest lb-dex -- --template svelte-ts
@@ -17,15 +17,15 @@ npm install --save-dev sass
 npm install @taquito/taquito @taquito/beacon-wallet
 ```
 
-Sass is a development only dependency, `@taquito/taquito`  is the NPM package for the Taquito library and `@taquito/beacon-wallet` is the NPM package that contains Beacon with some little configuration to make it easier to plug into Taquito.
+Sass is a development-only dependency, `@taquito/taquito`  is the NPM package for the Taquito library and `@taquito/beacon-wallet` is the NPM package that contains Beacon with some little configuration to make it easier to plug into Taquito.
 
-There are a couple of other librairies we need to install:
+There are a couple of other libraries we need to install:
 
 ```
 npm install --save-dev buffer events vite-compatible-readable-stream
 ```
 
-These librairies are required to be able to run Beacon in a Svelte app. We will see down below how to use them.
+These libraries are required to be able to run Beacon in a Svelte app. We will see down below how to use them.
 
 Once everything has been installed, we have to set up the right configuration.
 
@@ -101,10 +101,10 @@ Here is what you should have:
 </html>
 ```
 
-In a first `script` tag, we set the `global` variable to `globalThis`. Then, in a second `script` tag with a `module` type, we import `Buffer` from the `buffer` library and we add it to the `window` global object.
+In the first `script` tag, we set the `global` variable to `globalThis`. Then, in a second `script` tag with a `module` type, we import `Buffer` from the `buffer` library and add it to the `window` global object.
 
-> *Note: this conguration is required to run the Beacon SDK with a Svelte app. Taquito works completely out of the box and doesn't require any setting.*
+> *Note: this configuration is required to run the Beacon SDK with a Svelte app. Taquito works completely out of the box and doesn't require any settings.*
 
 Once we updated the configuration in the `vite.config.js` file and in the `index.html` file, our project is successfully set up! You can run `npm run dev` in your terminal at the root of the project to check that everything works properly, the dapp should be running on `http://localhost:4000`
 
-Now, let's start writing some code and set up the dapp!
+Now, let's start writing some code and setting up the dapp!
