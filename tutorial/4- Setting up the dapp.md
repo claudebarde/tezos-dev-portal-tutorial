@@ -38,14 +38,14 @@ The entrypoint of every Svelte app is a file called `App.svelte`, this is where 
 ```
 
 Let's see what each of these elements does:
-- **assets** -> contains the favicon (this is the default Svelte favicon, but you can choose another one)
+- **assets** -> contains the favicon (here, this is the default Svelte favicon, but you can choose another one)
 - **lib** -> contains the different components that will make up our interface, here is what each does:
+	- `SwapView.svelte`: the interface to swap XTZ and tzBTC tokens
 	- `AddLiquidityView.svelte`: the interface to add liquidity to the LB DEX
-	- `Interface.svelte`: the higher-order component to hold the different views to interact with the LB DEX
 	- `RemoveLiquidity.svelte`: the interface to remove liquidity from the LB DEX
+	- `Interface.svelte`: the higher-order component to hold the different views to interact with the LB DEX
 	- `Sidebar.svelte`: the component to navigate between the different interfaces and to connect or disconnect the wallet
 	- `SirsStats.svelte`: the component to display the amount of XTZ, tzBTC, and SIRS present in the contract
-	- `SwapView.svelte`: the interface to swap XTZ and tzBTC tokens
 	- `Toast.svelte`: a simple component to display the progression of the transactions and other messages when interacting with the contract
 	- `UserInput.svelte`: a utility component to make it easier to interact and control input fields
 	- `UserStats.svelte`: the component to display the user's balance in XTZ, tzBTC, and SIRS
@@ -55,7 +55,7 @@ Let's see what each of these elements does:
 - **config.ts** -> different immutable values needed for the application and saved in a separate file for convenience
 - **lbUtils.ts** -> different methods to calculate values needed to interact with the Liquidity Baking contract
 - **main.ts** -> this is where the JavaScript for the app is bundled before being injected into the HTML file
-- **store.ts** -> a file with a store to handle the dapp state
+- **store.ts** -> a file with a [Svelte store](https://svelte.dev/tutorial/writable-stores) to handle the dapp state
 - **types.ts** -> custom TypeScript types 
 - **utils.ts** -> different utility methods
 
@@ -98,7 +98,8 @@ There is a `script` tag with a `lang` attribute set to `ts` for TypeScript, a `s
  
 Now, let's set up different things in our `App.svelte` file.
 
-The HTML part is just going to put all the higher-order components together
+The HTML part is just going to put all the higher-order components together:
+
 ```html=
 <main>
 	<Toast />
@@ -110,9 +111,11 @@ The HTML part is just going to put all the higher-order components together
 	{/if}
 </main>
 ```
+
 The interface will change after different elements are available to the dapp, mostly, the data about the liquidity pools from the liquidity baking contract
 
-The SASS part will import different settings and apply styling to the `main` tag
+The SASS part will import different settings and apply styling to the `main` tag:
+
 ```scss=
 @import "./styles/settings.scss";
 
@@ -133,7 +136,8 @@ main {
 ```
 
 Now, the TypeScript part.
-First, we import the libraries and components we need
+First, we import the libraries and components we need:
+
 ```typescript=
 import { onMount } from "svelte";
 import { TezosToolkit } from "@taquito/taquito";
@@ -145,14 +149,16 @@ import Toast from "./lib/Toast.svelte";
 import type { Storage } from "./types";
 import { fetchExchangeRates } from "./utils";
 ```
+
 - `onMount` is a method exported by Svelte that will run some code when the component mounts (more on that below)
 - `TezosToolkit` is the class that gives you access to all the features of Taquito
 - `store` is a Svelte feature to manage the state of the dapp
 - From the `config.ts` file, we import `rpcUrl` (the URL of the Tezos RPC node) and `dexAddress`, the address of the Liquidity Baking contract
-- `Storage` is a custom type that represents the storage type of the LB DEX
+- `Storage` is a custom type that represents the signature type of the LB DEX storage
 - `fetchExchangeRates` is a function to fetch the exchange rates of XTZ and tzBTC (more on that below)
 
 Next, we use `onMount` to set up the state of the dapp:
+
 ```typescript=
 onMount(async () => {
     const Tezos = new TezosToolkit(rpcUrl);
@@ -229,4 +235,4 @@ export const fetchExchangeRates = async (): Promise<{
 };
 ```
 
-We use the [QuipuSwap GraphQL API](https://analytics-api.quipuswap.com/graphql) to fetch these exchange rates. After the exchange rates are received, we parse the response from the API and validate the price given for XTZ and tzBTC. These prices are then returned by the function and we can save them in the store.
+We use the [QuipuSwap GraphQL API](https://analytics-api.quipuswap.com/graphql) to fetch these exchange rates. After the exchange rates are received, we parse the response from the API and validate the price given for XTZ and tzBTC. These prices are then returned by the function and we can save them in the store. The exchange rates are used, for example, to calculate the total value in USD locked in the contract.

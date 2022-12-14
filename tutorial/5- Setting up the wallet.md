@@ -2,7 +2,7 @@ Now, let's talk about the wallet.
 
 The wallet is a key element of your dapp, without it, the users won't be able to interact with the Tezos blockchain, which defeats your purpose. There are multiple considerations to take into account when you are setting up the wallet that we will explain below.
 
-First, we want to isolate the wallet and its different interactions and values in the same component, called `Wallet.svelte` in our example. When using the Beacon SDK, it is crucial to keep a single instance of Beacon running in order to prevent bugs.
+First, we want to isolate the wallet and its different interactions and values in the same component, called `Wallet.svelte` in our example. When using the Beacon SDK, it is crucial to keep a **single instance of Beacon** running in order to prevent bugs.
 
 When the Wallet component mounts, there are different things we want to do:
 
@@ -42,9 +42,13 @@ The `BeaconWallet` instance provides a `client` property with different methods,
 If there is a live connection, we can fetch the user's address and save it into the store, update the store with the user's address before setting up the wallet as the signer with `$store.Tezos.setWalletProvider(wallet)`, get the information we need about the wallet (mainly, the name of the wallet) with the `getWalletInfo()` function and then, fetch the balances for the address that is connected with the `fetchBalances()` function described earlier.
 Once the balances are fetched, they are saved into the store to be displayed in the interface.
 
+>*Note: `TezosAccountAddress` is a custom type I like to use to validate Tezos addresses for implicit accounts:
+>`type TezosAccountAddress = tz${"1" | "2" | "3"}${string}`
+>TypeScript will raise a warning if you try to use a string that doesn't match this pattern.
+
 ### Connecting the wallet
 
-Taquito and Beacon working in unison makes it very easy to connect the wallet. A few lines of code abstracted by these two essential libraries on Tezos are going to make miracles.
+Taquito and Beacon working in unison makes it very easy to connect the wallet. A few lines of code using the APIs of these two essential libraries on Tezos are going to make miracles.
 
 Here is how to do it:
 
@@ -117,7 +121,7 @@ The call to `clearActiveAccount()` on the wallet instance is the only thing that
 
 Writing code to interact with a wallet in a decentralized application is a very new paradigm and although you will be able to reuse a lot of concepts and good practices from your experience as a developer, there are also a few new things to keep in mind:
 
-1. Never prompt the users to connect their wallet after the dapp is mounted: getting a wallet popup on your screen just after the app is loaded is annoying, you have to remember that a lot of your users are non-technical and don't understand that connecting a wallet is harmless, so they may be wary about your dapp if you ask them to connect their wallet from the get-go. Instead, present some information about your dapp and a button to connect their wallet.
+1. Never prompt the users to connect their wallet after the dapp is mounted: getting a wallet popup on your screen just after the app is loaded is annoying, you have to remember that a lot of your users are non-technical and don't understand that connecting a wallet is harmless, so they may be wary about your dapp if you ask them to connect their wallet from the get-go. Instead, present some information about your dapp and a button to manually connect their wallet, if this is their first time.
 2. The button to connect a wallet must stand out in your interface, whether you make it bigger, with a different color, or a different font, the users must not spend more than a couple of seconds to find it.
 3. The button must be in a predictable position: most dapps on Tezos place their button to connect a wallet at the top-left or top-right of the UI. You are not *"creative"* by placing the button in some other location, you will just end up confusing your users.
 4. The text in the button should read **Connect** or something similar, avoid **Sync** or other words but "connect" as they can mean something different in the context of a decentralized application.

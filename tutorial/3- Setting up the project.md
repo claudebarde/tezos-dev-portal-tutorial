@@ -2,7 +2,7 @@ As we are building a web app with the Svelte framework, the steps to set up the 
 
 In this tutorial, we will make a Svelte SPA, so we won't need SvelteKit, which will also make our life easier.
 
-The first thing to do, installing Svelte with TypeScript and Vite:
+The first thing to do is to install Svelte with TypeScript and Vite:
 
 ```
 npm create vite@latest lb-dex -- --template svelte-ts
@@ -101,9 +101,9 @@ Here is what you should have:
 </html>
 ```
 
-In the first `script` tag, we set the `global` variable to `globalThis`. Then, in a second `script` tag with a `module` type, we import `Buffer` from the `buffer` library and add it to the `window` global object.
+In the first `script` tag, we set the `global` variable to `globalThis`. Then, in the second `script` tag with a `module` type, we import `Buffer` from the `buffer` library and add it to the `window` global object.
 
-> *Note: this configuration is required to run the Beacon SDK with a Svelte app. Taquito works completely out of the box and doesn't require any settings.*
+> *Note: this configuration is required to run the Beacon SDK with a Vite app. Taquito works completely out of the box and doesn't require any settings.*
 
 Once we updated the configuration in the `vite.config.js` file and in the `index.html` file, our project is successfully set up! You can run `npm run dev` in your terminal at the root of the project to check that everything works properly, the dapp should be running on `http://localhost:4000`
 

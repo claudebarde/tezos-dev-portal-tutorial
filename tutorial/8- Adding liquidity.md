@@ -9,6 +9,7 @@ The interface here is going to look a lot like the interface for swapping, with 
 ![AddLiquidity UI](/images/add-liquidity-ui.png "Add liquidity UI")
 
 Like before, we have 2 input fields, but this time, there is no middle button to switch between the 2 tokens and both inputs are editable.
+
 When inputting a number in one of the fields, the dapp must calculate the corresponding amount of the other token, as well as the expected amount in SIRS that will be received.
 
 Now, let's see how all of that is done!

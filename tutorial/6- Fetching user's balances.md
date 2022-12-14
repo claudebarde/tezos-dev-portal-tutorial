@@ -16,7 +16,7 @@ export const fetchBalances = async (
   sirsBalance: number;
 } | null> => {
 	try {
-	// the code will come here
+	// the code will be here
   } catch (error) {
     console.error(error);
     return null;
@@ -90,4 +90,4 @@ if (res) {
 }
 ```
 
-And that's it to fetch the user's balances in XTZ, tzBTC, and SIRS!
+And that's it, you fetched the user's balances in XTZ, tzBTC, and SIRS!
