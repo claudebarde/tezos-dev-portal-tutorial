@@ -38,43 +38,44 @@ The entrypoint of every Svelte app is a file called `App.svelte`, this is where 
 ```
 
 Let's see what each of these elements does:
+
 - **assets** -> contains the favicon (here, this is the default Svelte favicon, but you can choose another one)
 - **lib** -> contains the different components that will make up our interface, here is what each does:
-	- `SwapView.svelte`: the interface to swap XTZ and tzBTC tokens
-	- `AddLiquidityView.svelte`: the interface to add liquidity to the LB DEX
-	- `RemoveLiquidity.svelte`: the interface to remove liquidity from the LB DEX
-	- `Interface.svelte`: the higher-order component to hold the different views to interact with the LB DEX
-	- `Sidebar.svelte`: the component to navigate between the different interfaces and to connect or disconnect the wallet
-	- `SirsStats.svelte`: the component to display the amount of XTZ, tzBTC, and SIRS present in the contract
-	- `Toast.svelte`: a simple component to display the progression of the transactions and other messages when interacting with the contract
-	- `UserInput.svelte`: a utility component to make it easier to interact and control input fields
-	- `UserStats.svelte`: the component to display the user's balance in XTZ, tzBTC, and SIRS
-	- `Wallet.svelte`: the component to manage wallet interactions
+  - `SwapView.svelte`: the interface to swap XTZ and tzBTC tokens
+  - `AddLiquidityView.svelte`: the interface to add liquidity to the LB DEX
+  - `RemoveLiquidity.svelte`: the interface to remove liquidity from the LB DEX
+  - `Interface.svelte`: the higher-order component to hold the different views to interact with the LB DEX
+  - `Sidebar.svelte`: the component to navigate between the different interfaces and to connect or disconnect the wallet
+  - `SirsStats.svelte`: the component to display the amount of XTZ, tzBTC, and SIRS present in the contract
+  - `Toast.svelte`: a simple component to display the progression of the transactions and other messages when interacting with the contract
+  - `UserInput.svelte`: a utility component to make it easier to interact and control input fields
+  - `UserStats.svelte`: the component to display the user's balance in XTZ, tzBTC, and SIRS
+  - `Wallet.svelte`: the component to manage wallet interactions
 - **styles** -> contains the SASS files to style different elements of our interface
 - **App.svelte** -> the entrypoint of the application
 - **config.ts** -> different immutable values needed for the application and saved in a separate file for convenience
 - **lbUtils.ts** -> different methods to calculate values needed to interact with the Liquidity Baking contract
 - **main.ts** -> this is where the JavaScript for the app is bundled before being injected into the HTML file
 - **store.ts** -> a file with a [Svelte store](https://svelte.dev/tutorial/writable-stores) to handle the dapp state
-- **types.ts** -> custom TypeScript types 
+- **types.ts** -> custom TypeScript types
 - **utils.ts** -> different utility methods
 
 The first thing to do is to import our styles into the `main.ts` file:
 
 ```typescript=
 import App from './App.svelte'
-import "./styles/index.scss";  
+import "./styles/index.scss";
 
 const app = new App({
 	target: document.body
-})  
+})
 
 export default app
 ```
 
 Svelte uses SASS by default, so there is no configuration to do for that.
 
-> *Note: I also like to target the `body` tag to inject the HTML produced by JavaScript instead of a `div` inside the `body`, but that's a personal choice and you are free to use a `div` instead*
+> _Note: I also like to target the `body` tag to inject the HTML produced by JavaScript instead of a `div` inside the `body`, but that's a personal choice and you are free to use a `div` instead_
 
 Before continuing, this is what a Svelte file looks like:
 
@@ -95,7 +96,7 @@ Svelte components are fully contained, which means that the style that you apply
 There is a `script` tag with a `lang` attribute set to `ts` for TypeScript, a `style` tag with a `lang` attribute set to `scss` for SASS and the rest of the code in the file will be interpreted as HTML.
 
 ### Configuring the dapp
- 
+
 Now, let's set up different things in our `App.svelte` file.
 
 The HTML part is just going to put all the higher-order components together:
@@ -112,7 +113,7 @@ The HTML part is just going to put all the higher-order components together:
 </main>
 ```
 
-The interface will change after different elements are available to the dapp, mostly, the data about the liquidity pools from the liquidity baking contract
+The interface will change after different elements are available to the dapp, mostly, the data about the liquidity pools from the liquidity baking contract.
 
 The SASS part will import different settings and apply styling to the `main` tag:
 

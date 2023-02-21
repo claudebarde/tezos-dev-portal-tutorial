@@ -1,6 +1,6 @@
 # Welcome to this Tezos dapp tutorial!
 
-In this tutorial, you will learn how to set up and create a decentralized web application on Tezos. We will build together an interface for the Liquidity Baking smart contract that will allow us to interact with this DEX and perform different operations, like swapping tokens or provide liquidity. At the same time, you will be introduced to core concepts of building a decentralized application in general, but also specifically on Tezos.
+In this tutorial, you will learn how to set up and create a decentralized web application on Tezos. We will build together an interface for the Liquidity Baking smart contract that will allow us to interact with this DEX and perform different operations, like swapping tokens or providing liquidity. At the same time, you will be introduced to core concepts of building a decentralized application in general, but also specifically on Tezos.
 
 As the dapp will be built with [TypeScript](https://www.typescriptlang.org/), a good knowledge of this programming language is required. We will use the [Svelte](https://svelte.dev/) framework to develop the application, no prior knowledge of it is required as it is pretty intuitive to use and I will explain how it works along the way.
 
@@ -17,6 +17,7 @@ The contract is also fully public, which means that anybody with a Tezos wallet 
 ## What are we going to build?
 
 In this tutorial, we will build a dapp interface that interacts with the LB contract to swap tokens, add liquidity and remove it. The dapp will handle different actions:
+
 - Displaying users' information like their XTZ, tzBTC, and SIRS balance and update them after each transaction
 - Connecting and disconnecting the users' wallet
 - Displaying wallet information like its connection status and the network it's connected to
@@ -28,10 +29,11 @@ In this tutorial, we will build a dapp interface that interacts with the LB cont
 ## What tools are we going to use?
 
 As the decentralized application is ultimately a web app, we will use the following tools to build it:
+
 - **Svelte** for the JavaScript framework
 - **TypeScript** to make our JavaScript code safer and more expressive
 - **Sass** as a CSS preprocessor
-- **Vite** to bundle the application (pronounced like *veet*)
+- **Vite** to bundle the application (pronounced like _veet_)
 - **Taquito** to interact with the Tezos blockchain
 - **Beacon** and the wrapper library provided by Taquito to use a Tezos wallet
 
