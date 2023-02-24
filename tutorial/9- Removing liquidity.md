@@ -28,7 +28,8 @@ const outputRes = removeLiquidityXtzTzbtcOut({
   }
 ```
 
-This function takes an object as parameter with 4 properties:
+This function takes an object as a parameter with 4 properties:
+
 - `liquidityBurned` -> the amount of SIRS to burn
 - `totalLiquidity` -> the total amount of SIRS tokens in the contract
 - `xtzPool` -> the total amount of XTZ tokens in the contract
@@ -49,7 +50,7 @@ const removeLiquidity = async () => {
         );
 
         const lbContract = await $store.Tezos.wallet.at(dexAddress);
-        
+
     ...
 
 };
@@ -75,6 +76,7 @@ await op.confirmation();
 ```
 
 The `removeLiquidity` entrypoint expects 5 parameters:
+
 1. `to` -> the account that will receive the XTZ and tzBTC
 2. `lqtBurned` -> the amount of SIRS to burn
 3. `minXtzWithdrawn` -> the minimum amount of XTZ expected to be received

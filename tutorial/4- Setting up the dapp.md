@@ -136,8 +136,7 @@ main {
 }
 ```
 
-Now, the TypeScript part.
-First, we import the libraries and components we need:
+Now, the TypeScript part. First, you import the libraries and components we need:
 
 ```typescript=
 import { onMount } from "svelte";

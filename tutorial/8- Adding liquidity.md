@@ -181,13 +181,14 @@ const addLiquidityLiquidityCreated = (p: {
 ```
 
 This function takes 3 parameters:
+
 1. the amount of XTZ you want to add as liquidity
 2. the current state of the XTZ pool
 3. the total amount of liquidity available in the contract (i.e. the SIRS tokens)
 
 It will output the amount of SIRS created after the transaction. This amount is stored in the `sirsOutput` variable to be displayed in the interface.
 
-### Adding liquidity
+### Sending tokens
 
 After we calculated all the values we need to add liquidity to the Liquidity Baking contract, it's time to forge the transaction!
 
@@ -218,7 +219,7 @@ After that, we convert the amount of tzBTC we got into its "real" value, i.e. th
 
 Then, we create the `ContractAbstraction` for the LB DEX and the `ContractAbstraction` for the tzBTC contract, as we will interact with both.
 
->*Note: remember, every time your users want to use tzBTC with the LB DEX, the amount of tokens that will be used needs to be approved at the tzBTC contract level, which requires 3 different operations.*
+> _Note: remember, every time your users want to use tzBTC with the LB DEX, the amount of tokens that will be used needs to be approved at the tzBTC contract level, which requires 3 different operations._
 
 At this point, you may have guessed that we have to create a batched transaction, but let's do it in a different way from the previous chapter, so you can choose the way you prefer:
 
@@ -259,15 +260,18 @@ await batchOp.confirmation();
 In the previous chapter, the batched transaction was created using the `withContractCall` method available on the `batch` method. Here, we will actually pass a parameter to the `batch()` method, an array containing multiple objects that each represent an operation.
 
 The first operation:
+
 ```typescript=
 {
 kind: OpKind.TRANSACTION,
 ...tzBtcContract.methods.approve(dexAddress, 0).toTransferParams()
 }
 ```
+
 is the transaction required to set the amount of approved tzBTC for the LB DEX to zero.
 
 The second operation:
+
 ```typescript=
 {
 kind: OpKind.TRANSACTION,
@@ -276,9 +280,11 @@ kind: OpKind.TRANSACTION,
   .toTransferParams()
 }
 ```
+
 sets the amount of approved tzBTC for the LB DEX contract.
 
 The third operation:
+
 ```typescript=
 {
 	kind: OpKind.TRANSACTION,
@@ -294,21 +300,25 @@ The third operation:
 	amount: +inputXtz
 }
 ```
+
 is the actual `addLiquidity` operation to provide the pair of tokens to the contract and receive SIRS tokens in exchange. The entrypoint expects 4 parameters (represented here as an object thanks to the `methodsObject` method):
+
 1. the address of the account that will receive the SIRS tokens
 2. the minimum amount of SIRS tokens expected to be received
 3. the amount of tzBTC deposited
 4. the deadline
 
->*Note: look how the attached amount of tez is passed to the operation as the last property of the operation object. It is important to put it after `.toTransferParams()` or it would be overwritten with the default amount of tez, which is zero.*
+> _Note: look how the attached amount of tez is passed to the operation as the last property of the operation object. It is important to put it after `.toTransferParams()` or it would be overwritten with the default amount of tez, which is zero._
 
 The fourth operation:
+
 ```typescript=
 {
 	kind: OpKind.TRANSACTION,
 	...tzBtcContract.methods.approve(dexAddress, 0).toTransferParams()
 }
 ```
+
 resets the allowed amount of tzBTC to be used by the LB DEX to zero.
 
 Then, just like any other transaction forged through Taquito, you call `.send()` and `.confirmation()` on the operation object to wait for one confirmation.
@@ -331,4 +341,4 @@ setTimeout(() => {
 }, 3000);
 ```
 
-And that's it! Your users have now the ability to add liquidity to the Liquidity Baking DEX and invest their XTZ and tzBTC.
+And that's it! Your users now have the ability to add liquidity to the Liquidity Baking DEX and invest their XTZ and tzBTC.
